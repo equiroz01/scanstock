@@ -18,7 +18,7 @@ import type { PlanType } from '@/types/settings';
 export default function BackupScreen() {
   const router = useRouter();
   const { plan } = usePlanStore();
-  const { loadProducts } = useProductStore();
+  const { products, loadProducts } = useProductStore();
   const {
     products: iapProducts,
     subscriptions,
@@ -101,6 +101,11 @@ export default function BackupScreen() {
       return;
     }
 
+    if (products.length === 0) {
+      Alert.alert('No Products', 'You don\'t have any products to backup yet. Add some products first.');
+      return;
+    }
+
     setIsExporting(true);
     try {
       await createBackupZip();
@@ -123,7 +128,9 @@ export default function BackupScreen() {
 
     Alert.alert(
       'Restore Backup',
-      'This will replace all current data with the backup data. Are you sure?',
+      `You currently have ${products.length} products.\n\n` +
+      `This will REPLACE ALL current data with the backup.\n\n` +
+      `Are you absolutely sure?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -155,6 +162,11 @@ export default function BackupScreen() {
       return;
     }
 
+    if (products.length === 0) {
+      Alert.alert('No Products', 'You don\'t have any products to export. Add some products first.');
+      return;
+    }
+
     setIsExportingCSV(true);
     try {
       await exportToCSV();
@@ -169,6 +181,11 @@ export default function BackupScreen() {
   const handleExportPDF = async () => {
     if (!isProLocal) {
       handleUpgrade('pro_local');
+      return;
+    }
+
+    if (products.length === 0) {
+      Alert.alert('No Products', 'You don\'t have any products to export. Add some products first.');
       return;
     }
 
@@ -291,7 +308,7 @@ export default function BackupScreen() {
                 className="flex-row items-center py-2"
               >
                 <View className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center mr-3">
-                  <Ionicons name="cloud-upload-outline" size={22} color="#4f46e5" />
+                  <Ionicons name="cloud-upload-outline" size={22} color="#30638e" />
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-base font-medium">
@@ -397,7 +414,7 @@ export default function BackupScreen() {
             <Card className="mb-4">
               <View className="flex-row items-start mb-4">
                 <View className="w-12 h-12 rounded-xl bg-primary-100 items-center justify-center mr-3">
-                  <Ionicons name="download-outline" size={24} color="#4f46e5" />
+                  <Ionicons name="download-outline" size={24} color="#30638e" />
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-lg font-bold">
@@ -435,7 +452,7 @@ export default function BackupScreen() {
 
               <View className="flex-row items-start mb-4 mt-2">
                 <View className="w-12 h-12 rounded-xl bg-primary-100 items-center justify-center mr-3">
-                  <Ionicons name="cloud-outline" size={24} color="#4f46e5" />
+                  <Ionicons name="cloud-outline" size={24} color="#30638e" />
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-lg font-bold">
