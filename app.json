@@ -1,30 +1,62 @@
 {
   "expo": {
-    "name": "scanstock-temp",
-    "slug": "scanstock-temp",
+    "name": "ScanStock",
+    "slug": "scanstock",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "scheme": "scanstock",
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a1a2e"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.scanstock.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "ScanStock needs camera access to scan barcodes",
+        "NSPhotoLibraryUsageDescription": "ScanStock needs photo library access to add product images"
+      },
+      "usesAppleSignIn": true,
+      "config": {
+        "usesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#1a1a2e"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "package": "com.scanstock.app",
+      "permissions": [
+        "android.permission.CAMERA",
+        "com.android.vending.BILLING"
+      ],
+      "versionCode": 1
     },
     "web": {
-      "favicon": "./assets/favicon.png"
-    }
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "ScanStock needs camera access to scan barcodes"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "ScanStock needs photo library access to add product images"
+        }
+      ]
+    ]
   }
 }
