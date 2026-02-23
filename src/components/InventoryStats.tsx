@@ -73,15 +73,29 @@ function StatCard({ label, value, icon, iconColor, iconBgColor, delay = 0, onPre
 
   const content = (
     <View
-      className="flex-1 bg-white rounded-2xl items-center py-4 px-2"
+      className="flex-1 bg-white items-center"
       style={{
+        borderRadius: 16,
         borderWidth: 1,
         borderColor: '#edf0f2',
+        paddingVertical: 16,
+        paddingHorizontal: 8,
+        shadowColor: '#1a2433',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
+        elevation: 2,
       }}
     >
       <View
-        className="w-11 h-11 rounded-xl items-center justify-center mb-2.5"
-        style={{ backgroundColor: iconBgColor }}
+        className="items-center justify-center"
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: 12,
+          backgroundColor: iconBgColor,
+          marginBottom: 10,
+        }}
       >
         <Ionicons name={icon} size={22} color={iconColor} />
       </View>

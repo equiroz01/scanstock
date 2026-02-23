@@ -83,7 +83,7 @@ export function SearchBar({
 
   const borderColor = borderAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: ['#edf0f2', '#30638e'],
+    outputRange: ['#e8e9eb', '#30638e'],
   });
 
   const backgroundColor = borderAnim.interpolate({
@@ -92,17 +92,17 @@ export function SearchBar({
   });
 
   return (
-    <View className="flex-row items-center gap-2">
+    <View className="flex-row items-center" style={{ gap: 8 }}>
       <Animated.View
         style={{
           flex: 1,
           borderColor,
           backgroundColor,
-          borderWidth: 1.5,
-          borderRadius: 16,
+          borderWidth: 1,
+          borderRadius: 14,
         }}
       >
-        <View className="flex-row items-center px-4 py-2.5">
+        <View className="flex-row items-center" style={{ paddingHorizontal: 16, paddingVertical: 10 }}>
           {/* Search/Loading Icon */}
           <View className="w-5 h-5 items-center justify-center">
             {isSearching ? (
@@ -169,8 +169,14 @@ export function SearchBar({
       {onFilterPress && (
         <Pressable
           onPress={handleFilterPress}
-          className="w-12 h-12 items-center justify-center bg-white border border-dark-200"
-          style={{ borderRadius: 16 }}
+          className="items-center justify-center bg-white"
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: '#e8e9eb',
+          }}
           accessibilityLabel="Filter options"
           accessibilityRole="button"
         >

@@ -11,7 +11,7 @@ import {
 import * as Haptics from 'expo-haptics';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useProductStore } from '@/stores/useProductStore';
 import { ProductCard } from '@/components/ProductCard';
@@ -370,10 +370,16 @@ export default function InventoryScreen() {
               {/* Sort Button */}
               <Pressable
                 onPress={toggleSortMenu}
-                className={`px-3 py-1.5 border flex-row items-center ${
-                  showSortMenu ? 'bg-dark-100 border-dark-300' : 'bg-white border-dark-200'
+                className={`flex-row items-center ${
+                  showSortMenu ? 'bg-dark-100' : 'bg-white'
                 }`}
-                style={{ borderRadius: 9999 }}
+                style={{
+                  borderRadius: 9999,
+                  paddingHorizontal: 12,
+                  paddingVertical: 6,
+                  borderWidth: 1,
+                  borderColor: showSortMenu ? '#b8bcc2' : '#d4d6da',
+                }}
               >
                 <Ionicons
                   name={currentSort?.icon || 'swap-vertical'}
@@ -404,8 +410,13 @@ export default function InventoryScreen() {
                     outputRange: [-10, 0],
                   }),
                 }],
+                borderRadius: 16,
+                borderWidth: 1,
+                borderColor: '#d4d6da',
+                overflow: 'hidden' as const,
+                marginTop: 8,
+                backgroundColor: '#ffffff',
               }}
-              className="bg-white rounded-2xl border border-dark-200 overflow-hidden mt-2"
             >
               {sortOptionsConfig.map((option, index) => (
                 <Pressable
@@ -453,8 +464,14 @@ export default function InventoryScreen() {
           <View className="flex-row items-center justify-between mb-4">
             <View className="flex-row items-center">
               <View
-                className="w-10 h-10 rounded-xl items-center justify-center mr-3"
-                style={{ backgroundColor: '#eff6ff' }}
+                className="items-center justify-center"
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  backgroundColor: '#eff6ff',
+                  marginRight: 12,
+                }}
               >
                 <Ionicons name="cube" size={22} color="#2563eb" />
               </View>
@@ -468,10 +485,15 @@ export default function InventoryScreen() {
               style={{
                 width: 42,
                 height: 42,
-                borderRadius: 21,
+                borderRadius: 14,
                 backgroundColor: '#ffffff',
-                borderWidth: 1.5,
-                borderColor: '#e2e8f0',
+                borderWidth: 1,
+                borderColor: '#e8e9eb',
+                shadowColor: '#1a2433',
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.04,
+                shadowRadius: 4,
+                elevation: 1,
               }}
             >
               <Ionicons name="add" size={24} color="#1e293b" />
@@ -585,34 +607,24 @@ export default function InventoryScreen() {
           onPress={() => router.push('/scanner')}
           onPressIn={handleFabPressIn}
           onPressOut={handleFabPressOut}
-          className="items-center justify-center overflow-hidden"
           accessibilityLabel="Open barcode scanner"
           accessibilityRole="button"
           accessibilityHint="Scan a barcode to add or find a product"
           style={{
-            width: 72,
-            height: 72,
-            borderRadius: 22,
-            shadowColor: '#003d5b',
-            shadowOffset: { width: 0, height: 6 },
-            shadowOpacity: 0.35,
-            shadowRadius: 12,
-            elevation: 12,
+            width: 60,
+            height: 60,
+            borderRadius: 18,
+            backgroundColor: '#1a2433',
+            alignItems: 'center',
+            justifyContent: 'center',
+            shadowColor: '#1a2433',
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.25,
+            shadowRadius: 10,
+            elevation: 8,
           }}
         >
-          <LinearGradient
-            colors={['#7bc45c', '#5fad41', '#4a9432', '#3d7a2a']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="w-full h-full items-center justify-center"
-            style={{ borderRadius: 22 }}
-          >
-            <View
-              className="absolute inset-0 items-center justify-center"
-              style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 22 }}
-            />
-            <Ionicons name="scan" size={32} color="white" />
-          </LinearGradient>
+          <Ionicons name="scan" size={28} color="white" />
         </Pressable>
       </Animated.View>
     </View>

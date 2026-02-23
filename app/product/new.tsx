@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -228,7 +227,8 @@ export default function NewProductScreen() {
           <View className="flex-row items-center justify-between px-4 py-3">
             <Pressable
               onPress={handleBack}
-              className="w-10 h-10 rounded-xl bg-dark-100 items-center justify-center"
+              className="bg-dark-100 items-center justify-center"
+              style={{ width: 40, height: 40, borderRadius: 12 }}
             >
               <Ionicons name="close" size={22} color="#475569" />
             </Pressable>
@@ -249,8 +249,11 @@ export default function NewProductScreen() {
               <Animated.View style={{ transform: [{ scale: photoScale }] }}>
                 <Pressable
                   onPress={showImageOptions}
-                  className="w-36 h-36 rounded-3xl overflow-hidden"
+                  className="overflow-hidden"
                   style={{
+                    width: 144,
+                    height: 144,
+                    borderRadius: 24,
                     shadowColor: '#30638e',
                     shadowOffset: { width: 0, height: 4 },
                     shadowOpacity: photoUri ? 0.3 : 0.1,
@@ -266,22 +269,37 @@ export default function NewProductScreen() {
                       </View>
                     </View>
                   ) : (
-                    <LinearGradient
-                      colors={['#f1f5f9', '#e2e8f0']}
-                      className="w-full h-full items-center justify-center"
+                    <View
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        backgroundColor: '#f5f6fa',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                     >
-                      <View className="w-16 h-16 rounded-2xl bg-white items-center justify-center mb-2">
+                      <View
+                        style={{
+                          width: 56,
+                          height: 56,
+                          borderRadius: 16,
+                          backgroundColor: '#ffffff',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginBottom: 8,
+                        }}
+                      >
                         <Ionicons name="camera-outline" size={28} color="#94a3b8" />
                       </View>
-                      <Text className="text-dark-400 text-sm font-medium">{t.products.addPhoto}</Text>
-                    </LinearGradient>
+                      <Text style={{ color: '#9299a3', fontSize: 14, fontWeight: '500' }}>{t.products.addPhoto}</Text>
+                    </View>
                   )}
                 </Pressable>
               </Animated.View>
             </View>
 
             {/* Form Fields */}
-            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
+            <View className="bg-white mb-4" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}>
               <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
                 {t.products.productInformation}
               </Text>
@@ -313,7 +331,7 @@ export default function NewProductScreen() {
             </View>
 
             {/* Pricing Section */}
-            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
+            <View className="bg-white mb-4" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}>
               <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
                 {t.products.pricingStock}
               </Text>
@@ -344,9 +362,9 @@ export default function NewProductScreen() {
             </View>
 
             {/* Quick Tips */}
-            <View className="bg-primary-50 rounded-2xl p-4 border border-primary-100">
+            <View className="bg-primary-50" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#dae6ef' }}>
               <View className="flex-row items-start">
-                <View className="w-8 h-8 rounded-lg bg-primary-100 items-center justify-center mr-3">
+                <View className="bg-primary-100 items-center justify-center mr-3" style={{ width: 32, height: 32, borderRadius: 8 }}>
                   <Ionicons name="bulb-outline" size={18} color="#30638e" />
                 </View>
                 <View className="flex-1">

@@ -12,7 +12,6 @@ import {
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as ImagePicker from 'expo-image-picker';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -239,7 +238,7 @@ export default function ProductDetailScreen() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-dark-50 items-center justify-center">
-        <View className="w-16 h-16 rounded-2xl bg-primary-100 items-center justify-center mb-4">
+        <View className="bg-primary-100 items-center justify-center" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }}>
           <Ionicons name="cube-outline" size={32} color="#30638e" />
         </View>
         <Text className="text-dark-500">{t.products.loadingProduct}</Text>
@@ -250,7 +249,7 @@ export default function ProductDetailScreen() {
   if (!product) {
     return (
       <View className="flex-1 bg-dark-50 items-center justify-center">
-        <View className="w-16 h-16 rounded-2xl bg-error-100 items-center justify-center mb-4">
+        <View className="bg-error-100 items-center justify-center" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }}>
           <Ionicons name="alert-circle-outline" size={32} color="#dc2626" />
         </View>
         <Text className="text-dark-900 font-semibold mb-2">{t.products.productNotFound}</Text>
@@ -278,7 +277,8 @@ export default function ProductDetailScreen() {
           <View className="flex-row items-center justify-between px-4 py-3">
             <Pressable
               onPress={() => router.back()}
-              className="w-10 h-10 rounded-xl bg-dark-100 items-center justify-center"
+              className="bg-dark-100 items-center justify-center"
+              style={{ width: 40, height: 40, borderRadius: 12 }}
             >
               <Ionicons name="arrow-back" size={22} color="#475569" />
             </Pressable>
@@ -288,7 +288,8 @@ export default function ProductDetailScreen() {
             {!isEditing ? (
               <Pressable
                 onPress={() => setIsEditing(true)}
-                className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center"
+                className="bg-primary-100 items-center justify-center"
+                style={{ width: 40, height: 40, borderRadius: 12 }}
               >
                 <Ionicons name="create-outline" size={22} color="#30638e" />
               </Pressable>
@@ -322,8 +323,11 @@ export default function ProductDetailScreen() {
             <Animated.View style={{ transform: [{ scale: photoScale }] }}>
               <Pressable
                 onPress={isEditing ? showImageOptions : undefined}
-                className="w-40 h-40 rounded-3xl overflow-hidden"
+                className="overflow-hidden"
                 style={{
+                  width: 160,
+                  height: 160,
+                  borderRadius: 24,
                   shadowColor: '#30638e',
                   shadowOffset: { width: 0, height: 4 },
                   shadowOpacity: 0.2,
@@ -344,19 +348,24 @@ export default function ProductDetailScreen() {
                     )}
                   </View>
                 ) : (
-                  <LinearGradient
-                    colors={isEditing ? ['#f1f5f9', '#e2e8f0'] : ['#ede9fe', '#ddd6fe']}
-                    className="w-full h-full items-center justify-center"
+                  <View
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      backgroundColor: '#f5f6fa',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
                   >
                     <Ionicons
                       name={isEditing ? 'camera-outline' : 'cube-outline'}
                       size={48}
-                      color={isEditing ? '#9299a3' : '#30638e'}
+                      color={isEditing ? '#9299a3' : '#94a3b8'}
                     />
                     {isEditing && (
-                      <Text className="text-dark-400 text-sm font-medium mt-2">{t.products.addPhoto}</Text>
+                      <Text style={{ color: '#9299a3', fontSize: 14, fontWeight: '500', marginTop: 8 }}>{t.products.addPhoto}</Text>
                     )}
-                  </LinearGradient>
+                  </View>
                 )}
               </Pressable>
             </Animated.View>
@@ -365,7 +374,7 @@ export default function ProductDetailScreen() {
           {isEditing ? (
             /* Edit Form */
             <>
-              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
+              <View className="bg-white mb-4" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}>
                 <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
                   {t.products.productInformation}
                 </Text>
@@ -388,7 +397,7 @@ export default function ProductDetailScreen() {
                 </View>
               </View>
 
-              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
+              <View className="bg-white mb-4" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}>
                 <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
                   {t.products.pricingStock}
                 </Text>
@@ -429,12 +438,12 @@ export default function ProductDetailScreen() {
             /* View Mode */
             <>
               {/* Name & Price Card */}
-              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-200 items-center">
+              <View className="bg-white mb-4 items-center" style={{ borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#edf0f2' }}>
                 <Text className="text-2xl font-bold text-dark-900 text-center">
                   {product.name}
                 </Text>
                 {product.barcode && (
-                  <View className="flex-row items-center mt-2 bg-dark-100 rounded-lg px-3 py-1.5">
+                  <View className="flex-row items-center mt-2 bg-dark-100" style={{ borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6 }}>
                     <Ionicons name="barcode-outline" size={16} color="#64748b" />
                     <Text className="text-dark-500 text-sm ml-1.5 font-mono">
                       {product.barcode}
@@ -447,7 +456,7 @@ export default function ProductDetailScreen() {
               </View>
 
               {/* Stock Control Card */}
-              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-200">
+              <View className="bg-white mb-4" style={{ borderRadius: 16, padding: 20, borderWidth: 1, borderColor: '#edf0f2' }}>
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider">
                     {t.products.stockLevel}
@@ -460,10 +469,13 @@ export default function ProductDetailScreen() {
                     <Pressable
                       onPress={() => handleStockChange(-1)}
                       disabled={product.stock === 0}
-                      className={`w-16 h-16 rounded-2xl items-center justify-center ${
+                      className={`items-center justify-center ${
                         product.stock === 0 ? 'bg-dark-100' : 'bg-dark-200'
                       }`}
-                      style={({ pressed }) => [pressed && product.stock > 0 && { opacity: 0.8 }]}
+                      style={({ pressed }) => [
+                        { width: 64, height: 64, borderRadius: 16 },
+                        pressed && product.stock > 0 && { opacity: 0.8 },
+                      ]}
                     >
                       <Ionicons
                         name="remove"
@@ -493,29 +505,27 @@ export default function ProductDetailScreen() {
                   <Animated.View style={{ transform: [{ scale: incrementScale }] }}>
                     <Pressable
                       onPress={() => handleStockChange(1)}
-                      className="w-16 h-16 rounded-2xl items-center justify-center overflow-hidden"
                       style={{
-                        shadowColor: '#5fad41',
+                        width: 64,
+                        height: 64,
+                        borderRadius: 16,
+                        backgroundColor: '#1a2433',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        shadowColor: '#1a2433',
                         shadowOffset: { width: 0, height: 4 },
-                        shadowOpacity: 0.4,
+                        shadowOpacity: 0.2,
                         shadowRadius: 8,
-                        elevation: 6,
+                        elevation: 4,
                       }}
                     >
-                      <LinearGradient
-                        colors={['#7bc45c', '#5fad41', '#4a9432']}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                        className="w-full h-full items-center justify-center"
-                      >
-                        <Ionicons name="add" size={32} color="white" />
-                      </LinearGradient>
+                      <Ionicons name="add" size={32} color="white" />
                     </Pressable>
                   </Animated.View>
                 </View>
 
                 {/* Quick adjust buttons */}
-                <View className="flex-row justify-center mt-4 gap-2">
+                <View className="flex-row justify-center mt-4" style={{ gap: 8 }}>
                   {[-5, -1, 1, 5].map((delta) => (
                     <Pressable
                       key={delta}
@@ -528,13 +538,14 @@ export default function ProductDetailScreen() {
                         }
                       }}
                       disabled={product.stock + delta < 0}
-                      className={`px-4 py-2 rounded-xl ${
+                      className={`${
                         product.stock + delta < 0
                           ? 'bg-dark-100'
                           : delta > 0
                             ? 'bg-success-100'
                             : 'bg-error-100'
                       }`}
+                      style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
                     >
                       <Text
                         className={`font-semibold ${
@@ -553,9 +564,15 @@ export default function ProductDetailScreen() {
               </View>
 
               {/* Stats */}
-              <View className="flex-row gap-3 mb-4">
-                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-200">
-                  <View className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center mb-2">
+              <View className="flex-row mb-4" style={{ gap: 12 }}>
+                <View
+                  className="flex-1 bg-white"
+                  style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}
+                >
+                  <View
+                    className="bg-primary-100 items-center justify-center"
+                    style={{ width: 40, height: 40, borderRadius: 12, marginBottom: 8 }}
+                  >
                     <Ionicons name="wallet-outline" size={20} color="#30638e" />
                   </View>
                   <Text className="text-dark-500 text-sm">{t.products.totalValue}</Text>
@@ -563,8 +580,14 @@ export default function ProductDetailScreen() {
                     {formatCurrency(product.price * product.stock)}
                   </Text>
                 </View>
-                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-200">
-                  <View className="w-10 h-10 rounded-xl bg-accent-100 items-center justify-center mb-2">
+                <View
+                  className="flex-1 bg-white"
+                  style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}
+                >
+                  <View
+                    className="bg-accent-100 items-center justify-center"
+                    style={{ width: 40, height: 40, borderRadius: 12, marginBottom: 8 }}
+                  >
                     <Ionicons name="time-outline" size={20} color="#2d936c" />
                   </View>
                   <Text className="text-dark-500 text-sm">{t.products.lastUpdated}</Text>
@@ -575,12 +598,12 @@ export default function ProductDetailScreen() {
               </View>
 
               {/* Actions */}
-              <View className="bg-white rounded-2xl p-4 border border-dark-200">
+              <View className="bg-white" style={{ borderRadius: 16, padding: 16, borderWidth: 1, borderColor: '#edf0f2' }}>
                 <Pressable
                   onPress={() => setShowQRModal(true)}
                   className="flex-row items-center py-3"
                 >
-                  <View className="w-10 h-10 rounded-xl bg-accent-100 items-center justify-center">
+                  <View className="bg-accent-100 items-center justify-center" style={{ width: 40, height: 40, borderRadius: 12 }}>
                     <Ionicons name="qr-code-outline" size={20} color="#2d936c" />
                   </View>
                   <Text className="flex-1 text-dark-900 font-medium ml-3">{t.products.viewQRCode}</Text>
@@ -593,7 +616,7 @@ export default function ProductDetailScreen() {
                   onPress={() => setIsEditing(true)}
                   className="flex-row items-center py-3"
                 >
-                  <View className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center">
+                  <View className="bg-primary-100 items-center justify-center" style={{ width: 40, height: 40, borderRadius: 12 }}>
                     <Ionicons name="create-outline" size={20} color="#30638e" />
                   </View>
                   <Text className="flex-1 text-dark-900 font-medium ml-3">{t.products.editProduct}</Text>
@@ -606,7 +629,7 @@ export default function ProductDetailScreen() {
                   onPress={handleDelete}
                   className="flex-row items-center py-3"
                 >
-                  <View className="w-10 h-10 rounded-xl bg-error-100 items-center justify-center">
+                  <View className="bg-error-100 items-center justify-center" style={{ width: 40, height: 40, borderRadius: 12 }}>
                     <Ionicons name="trash-outline" size={20} color="#dc2626" />
                   </View>
                   <Text className="flex-1 text-error-600 font-medium ml-3">{t.products.deleteProduct}</Text>

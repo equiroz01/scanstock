@@ -13,20 +13,20 @@ interface BadgeProps {
   pulse?: boolean;
 }
 
-const variantStyles: Record<BadgeVariant, { bg: string; text: string; iconColor: string; borderColor?: string }> = {
-  default: { bg: '#d4d6da', text: 'text-dark-700', iconColor: '#454c58', borderColor: '#9299a3' },
-  success: { bg: '#daf3e8', text: 'text-success-700', iconColor: '#1f6249', borderColor: '#86d3b6' },
-  warning: { bg: '#fef3c7', text: 'text-warning-700', iconColor: '#b45309', borderColor: '#fcd34d' },
-  error: { bg: '#fee2e2', text: 'text-error-700', iconColor: '#b91c1c', borderColor: '#fca5a5' },
-  info: { bg: '#dae6ef', text: 'text-primary-700', iconColor: '#234a6d', borderColor: '#8bb3cc' },
-  pro: { bg: '#f59e0b', text: 'text-white', iconColor: '#ffffff' },
-  accent: { bg: '#e2f2da', text: 'text-accent-700', iconColor: '#3d7a2a', borderColor: '#9ed485' },
+const variantStyles: Record<BadgeVariant, { bg: string; textColor: string; iconColor: string; borderColor?: string }> = {
+  default: { bg: '#d4d6da', textColor: '#454c58', iconColor: '#454c58', borderColor: '#9299a3' },
+  success: { bg: '#daf3e8', textColor: '#1f6249', iconColor: '#1f6249', borderColor: '#86d3b6' },
+  warning: { bg: '#fef3c7', textColor: '#b45309', iconColor: '#b45309', borderColor: '#fcd34d' },
+  error: { bg: '#fee2e2', textColor: '#b91c1c', iconColor: '#b91c1c', borderColor: '#fca5a5' },
+  info: { bg: '#dae6ef', textColor: '#234a6d', iconColor: '#234a6d', borderColor: '#8bb3cc' },
+  pro: { bg: '#f59e0b', textColor: '#ffffff', iconColor: '#ffffff' },
+  accent: { bg: '#e2f2da', textColor: '#3d7a2a', iconColor: '#3d7a2a', borderColor: '#9ed485' },
 };
 
-const sizeStyles: Record<BadgeSize, { container: string; text: string; iconSize: number; paddingH: number; paddingV: number }> = {
-  sm: { container: '', text: 'text-xxs font-medium', iconSize: 10, paddingH: 10, paddingV: 4 },
-  md: { container: '', text: 'text-xs font-semibold', iconSize: 12, paddingH: 12, paddingV: 6 },
-  lg: { container: '', text: 'text-sm font-semibold', iconSize: 14, paddingH: 16, paddingV: 8 },
+const sizeStyles: Record<BadgeSize, { fontSize: number; fontWeight: '500' | '600'; iconSize: number; paddingH: number; paddingV: number }> = {
+  sm: { fontSize: 10, fontWeight: '500', iconSize: 10, paddingH: 10, paddingV: 4 },
+  md: { fontSize: 12, fontWeight: '600', iconSize: 12, paddingH: 12, paddingV: 6 },
+  lg: { fontSize: 14, fontWeight: '600', iconSize: 14, paddingH: 16, paddingV: 8 },
 };
 
 export function Badge({ label, variant = 'default', size = 'md', icon, pulse }: BadgeProps) {
@@ -35,11 +35,12 @@ export function Badge({ label, variant = 'default', size = 'md', icon, pulse }: 
 
   return (
     <View
-      className="flex-row items-center"
       style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        alignSelf: 'flex-start',
         backgroundColor: variantStyle.bg,
         borderRadius: 100,
-        overflow: 'hidden',
         paddingHorizontal: sizeStyle.paddingH,
         paddingVertical: sizeStyle.paddingV,
         borderWidth: variantStyle.borderColor ? 1 : 0,
@@ -47,7 +48,7 @@ export function Badge({ label, variant = 'default', size = 'md', icon, pulse }: 
       }}
     >
       {pulse && (
-        <View className="w-2 h-2 bg-current mr-1.5 animate-pulse" style={{ borderRadius: 9999 }} />
+        <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: variantStyle.textColor, marginRight: 6, opacity: 0.8 }} />
       )}
       {icon && (
         <Ionicons
@@ -57,7 +58,7 @@ export function Badge({ label, variant = 'default', size = 'md', icon, pulse }: 
           style={{ marginRight: 4 }}
         />
       )}
-      <Text className={`${sizeStyle.text} ${variantStyle.text}`}>
+      <Text style={{ fontSize: sizeStyle.fontSize, fontWeight: sizeStyle.fontWeight, color: variantStyle.textColor }}>
         {label}
       </Text>
     </View>

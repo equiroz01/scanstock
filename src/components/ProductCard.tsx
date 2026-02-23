@@ -89,32 +89,37 @@ export function ProductCard({ product, onPress, searchQuery }: ProductCardProps)
   const isOutOfStock = product.stock === 0;
 
   return (
-    <Animated.View style={{ transform: [{ scale: scaleValue }] }} className="mb-2">
+    <Animated.View style={{ transform: [{ scale: scaleValue }], marginBottom: 8 }}>
       <Pressable
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        className={`
-          bg-white py-3 px-4
-          border border-dark-100
-          ${isOutOfStock ? 'opacity-75' : ''}
-        `}
+        className={`bg-white ${isOutOfStock ? 'opacity-75' : ''}`}
         style={{
           borderRadius: 16,
-          overflow: 'hidden',
+          borderWidth: 1,
+          borderColor: '#edf0f2',
+          paddingVertical: 12,
+          paddingHorizontal: 16,
           shadowColor: '#1a2433',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.02,
-          shadowRadius: 4,
-          elevation: 1,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.04,
+          shadowRadius: 8,
+          elevation: 2,
         }}
       >
         <View className="flex-row items-center">
           {/* Product Image - 56x56 */}
-          <View className={`
-            w-14 h-14 rounded-xl overflow-hidden mr-3
-            ${isOutOfStock ? 'bg-dark-200' : 'bg-dark-100'}
-          `}>
+          <View
+            style={{
+              width: 56,
+              height: 56,
+              borderRadius: 14,
+              overflow: 'hidden',
+              marginRight: 12,
+              backgroundColor: isOutOfStock ? '#d4d6da' : '#f0f4f8',
+            }}
+          >
             {product.photoPath ? (
               <Image
                 source={{ uri: product.photoPath }}

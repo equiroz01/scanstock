@@ -17,53 +17,65 @@ interface ButtonProps {
 
 const variantConfig = {
   primary: {
-    bg: 'bg-primary-600',
-    bgPressed: 'bg-primary-700',
-    text: 'text-white',
+    bgColor: '#1a2433',
+    bgPressedColor: '#0d1520',
+    textColor: '#ffffff',
     iconColor: '#ffffff',
     loaderColor: '#ffffff',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   secondary: {
-    bg: 'bg-dark-100',
-    bgPressed: 'bg-dark-200',
-    text: 'text-dark-800',
-    iconColor: '#1e293b',
-    loaderColor: '#30638e',
+    bgColor: '#f5f6fa',
+    bgPressedColor: '#e8e9eb',
+    textColor: '#1a2433',
+    iconColor: '#1a2433',
+    loaderColor: '#1a2433',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   danger: {
-    bg: 'bg-error-600',
-    bgPressed: 'bg-error-700',
-    text: 'text-white',
+    bgColor: '#dc2626',
+    bgPressedColor: '#b91c1c',
+    textColor: '#ffffff',
     iconColor: '#ffffff',
     loaderColor: '#ffffff',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   ghost: {
-    bg: 'bg-transparent',
-    bgPressed: 'bg-dark-100',
-    text: 'text-primary-600',
-    iconColor: '#30638e',
-    loaderColor: '#30638e',
+    bgColor: 'transparent',
+    bgPressedColor: '#f5f6fa',
+    textColor: '#1a2433',
+    iconColor: '#1a2433',
+    loaderColor: '#1a2433',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
   outline: {
-    bg: 'bg-transparent border-2 border-primary-600',
-    bgPressed: 'bg-primary-50',
-    text: 'text-primary-600',
-    iconColor: '#30638e',
-    loaderColor: '#30638e',
+    bgColor: 'transparent',
+    bgPressedColor: '#f5f6fa',
+    textColor: '#1a2433',
+    iconColor: '#1a2433',
+    loaderColor: '#1a2433',
+    borderWidth: 1.5,
+    borderColor: '#d4d6da',
   },
   success: {
-    bg: 'bg-success-600',
-    bgPressed: 'bg-success-700',
-    text: 'text-white',
+    bgColor: '#16a34a',
+    bgPressedColor: '#15803d',
+    textColor: '#ffffff',
     iconColor: '#ffffff',
     loaderColor: '#ffffff',
+    borderWidth: 0,
+    borderColor: 'transparent',
   },
 };
 
 const sizeConfig = {
-  sm: { container: 'px-3 py-2', text: 'text-sm', iconSize: 16, gap: 6 },
-  md: { container: 'px-5 py-3', text: 'text-base', iconSize: 18, gap: 8 },
-  lg: { container: 'px-6 py-4', text: 'text-lg', iconSize: 20, gap: 10 },
+  sm: { ph: 12, pv: 8, fontSize: 14, iconSize: 16, gap: 6 },
+  md: { ph: 20, pv: 12, fontSize: 16, iconSize: 18, gap: 8 },
+  lg: { ph: 24, pv: 16, fontSize: 17, iconSize: 20, gap: 10 },
 };
 
 export const Button = forwardRef<typeof Pressable, ButtonProps>(
@@ -130,22 +142,24 @@ export const Button = forwardRef<typeof Pressable, ButtonProps>(
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           disabled={disabled || loading}
-          className={`
-            rounded-2xl items-center justify-center flex-row
-            ${config.bg}
-            ${sizeStyle.container}
-            ${disabled && !loading ? 'opacity-40' : ''}
-            ${loading ? 'opacity-75' : ''}
-            ${fullWidth ? 'w-full' : ''}
-          `}
-          style={({ pressed }) => [
-            pressed && !disabled && !loading && { opacity: 0.85 }
-          ]}
+          style={({ pressed }) => ({
+            borderRadius: 14,
+            flexDirection: 'row' as const,
+            alignItems: 'center' as const,
+            justifyContent: 'center' as const,
+            paddingHorizontal: sizeStyle.ph,
+            paddingVertical: sizeStyle.pv,
+            backgroundColor: pressed && !disabled && !loading ? config.bgPressedColor : config.bgColor,
+            borderWidth: config.borderWidth,
+            borderColor: config.borderColor,
+            opacity: disabled && !loading ? 0.4 : loading ? 0.75 : 1,
+            width: fullWidth ? '100%' : undefined,
+          })}
         >
           {iconPosition === 'left' && iconElement && (
             <View style={{ marginRight: sizeStyle.gap }}>{iconElement}</View>
           )}
-          <Text className={`font-semibold ${config.text} ${sizeStyle.text}`}>
+          <Text style={{ fontWeight: '600', color: config.textColor, fontSize: sizeStyle.fontSize }}>
             {loading ? 'Loading...' : title}
           </Text>
           {iconPosition === 'right' && iconElement && (
@@ -169,9 +183,9 @@ interface IconButtonProps {
 }
 
 const iconButtonSizes = {
-  sm: { container: 'w-8 h-8', iconSize: 16 },
-  md: { container: 'w-10 h-10', iconSize: 20 },
-  lg: { container: 'w-12 h-12', iconSize: 24 },
+  sm: { wh: 32, iconSize: 16 },
+  md: { wh: 40, iconSize: 20 },
+  lg: { wh: 48, iconSize: 24 },
 };
 
 export function IconButton({ onPress, icon, variant = 'ghost', size = 'md', disabled }: IconButtonProps) {
@@ -202,15 +216,15 @@ export function IconButton({ onPress, icon, variant = 'ghost', size = 'md', disa
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
         disabled={disabled}
-        className={`
-          rounded-xl items-center justify-center
-          ${config.bg}
-          ${sizeStyle.container}
-          ${disabled ? 'opacity-40' : ''}
-        `}
-        style={({ pressed }) => [
-          pressed && !disabled && { opacity: 0.7 }
-        ]}
+        style={({ pressed }) => ({
+          width: sizeStyle.wh,
+          height: sizeStyle.wh,
+          borderRadius: 12,
+          alignItems: 'center' as const,
+          justifyContent: 'center' as const,
+          backgroundColor: pressed && !disabled ? config.bgPressedColor : config.bgColor,
+          opacity: disabled ? 0.4 : 1,
+        })}
       >
         <Ionicons name={icon} size={sizeStyle.iconSize} color={config.iconColor} />
       </Pressable>

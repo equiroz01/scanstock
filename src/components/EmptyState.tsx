@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { View, Text, Animated, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface EmptyStateProps {
   icon?: keyof typeof Ionicons.glyphMap;
@@ -17,7 +16,6 @@ export function EmptyState({ icon = 'cube-outline', title, description, actionLa
   const iconBounce = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
-    // Entrance animation
     Animated.parallel([
       Animated.timing(fadeAnim, {
         toValue: 1,
@@ -31,7 +29,6 @@ export function EmptyState({ icon = 'cube-outline', title, description, actionLa
         useNativeDriver: true,
       }),
     ]).start(() => {
-      // Subtle bounce for icon after entrance
       Animated.sequence([
         Animated.timing(iconBounce, {
           toValue: -8,
@@ -50,53 +47,55 @@ export function EmptyState({ icon = 'cube-outline', title, description, actionLa
 
   return (
     <Animated.View
-      className="flex-1 items-center justify-center px-10 py-20"
       style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 40,
+        paddingVertical: 80,
         opacity: fadeAnim,
         transform: [{ scale: scaleAnim }],
       }}
     >
-      <Animated.View
-        style={{
-          transform: [{ translateY: iconBounce }],
-        }}
-      >
-        <LinearGradient
-          colors={['#e8eef4', '#dae3ed']}
-          className="w-24 h-24 rounded-full items-center justify-center mb-5"
+      <Animated.View style={{ transform: [{ translateY: iconBounce }] }}>
+        <View
+          style={{
+            width: 96,
+            height: 96,
+            borderRadius: 48,
+            backgroundColor: '#f0f4f8',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: 20,
+          }}
         >
-          <Ionicons name={icon} size={48} color="#6e8faa" />
-        </LinearGradient>
+          <Ionicons name={icon} size={48} color="#94a3b8" />
+        </View>
       </Animated.View>
-      <Text className="text-dark-900 text-xl font-bold text-center mb-2">
+      <Text style={{ color: '#1a2433', fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 8 }}>
         {title}
       </Text>
       {description && (
-        <Text className="text-dark-500 text-base text-center leading-6">
+        <Text style={{ color: '#6e7785', fontSize: 16, textAlign: 'center', lineHeight: 24 }}>
           {description}
         </Text>
       )}
       {actionLabel && onAction && (
         <Pressable
           onPress={onAction}
-          className="mt-6 overflow-hidden rounded-xl"
           style={{
-            shadowColor: '#30638e',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.2,
-            shadowRadius: 8,
-            elevation: 4,
+            marginTop: 24,
+            borderRadius: 14,
+            backgroundColor: '#1a2433',
+            paddingHorizontal: 28,
+            paddingVertical: 14,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
         >
-          <LinearGradient
-            colors={['#4a90b8', '#30638e']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            className="px-6 py-3 flex-row items-center"
-          >
-            <Ionicons name="add-circle-outline" size={20} color="white" />
-            <Text className="text-white font-semibold ml-2">{actionLabel}</Text>
-          </LinearGradient>
+          <Ionicons name="add-circle-outline" size={20} color="white" />
+          <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 16, marginLeft: 8 }}>{actionLabel}</Text>
         </Pressable>
       )}
     </Animated.View>

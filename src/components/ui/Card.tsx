@@ -1,6 +1,5 @@
-import { View, Pressable, Text, StyleSheet, Animated } from 'react-native';
+import { View, Pressable, Text, Animated } from 'react-native';
 import { useRef, ReactNode } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 
 interface CardProps {
   children: ReactNode;
@@ -65,7 +64,16 @@ export function Card({
           onPressIn={handlePressIn}
           onPressOut={handlePressOut}
           className={baseStyles}
-          style={[{ borderRadius: 16, overflow: 'hidden' }, ({ pressed }) => pressed && { opacity: 0.95 }].flat()}
+          style={({ pressed }) => ({
+            borderRadius: 16,
+            overflow: 'hidden' as const,
+            shadowColor: '#1a2433',
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.04,
+            shadowRadius: 8,
+            elevation: 2,
+            opacity: pressed ? 0.95 : 1,
+          })}
         >
           {children}
         </Pressable>
@@ -81,8 +89,8 @@ export function Card({
         overflow: 'hidden',
         shadowColor: '#1a2433',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.03,
-        shadowRadius: 6,
+        shadowOpacity: 0.04,
+        shadowRadius: 8,
         elevation: 2,
       }}
     >
@@ -115,70 +123,6 @@ export function SectionCard({ title, subtitle, children, action, variant = 'defa
       <View className="px-4 pb-4">{children}</View>
     </Card>
   );
-}
-
-// Gradient card for premium features
-interface GradientCardProps {
-  children: ReactNode;
-  colors?: readonly [string, string, ...string[]];
-  onPress?: () => void;
-  padding?: 'sm' | 'md' | 'lg';
-}
-
-const gradientPadding = {
-  sm: 12,
-  md: 20,
-  lg: 28,
-};
-
-export function GradientCard({
-  children,
-  colors = ['#30638e', '#003d5b'],
-  onPress,
-  padding = 'md'
-}: GradientCardProps) {
-  const scaleValue = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scaleValue, {
-      toValue: 0.98,
-      useNativeDriver: true,
-      speed: 50,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scaleValue, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 50,
-    }).start();
-  };
-
-  const content = (
-    <View className="rounded-2xl overflow-hidden shadow-lg">
-      <LinearGradient
-        colors={colors}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={[styles.gradient, { padding: gradientPadding[padding] }]}
-      >
-        {children}
-      </LinearGradient>
-    </View>
-  );
-
-  if (onPress) {
-    return (
-      <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
-        <Pressable onPress={onPress} onPressIn={handlePressIn} onPressOut={handlePressOut}>
-          {content}
-        </Pressable>
-      </Animated.View>
-    );
-  }
-
-  return content;
 }
 
 // Stat card for dashboard
@@ -225,8 +169,3 @@ export function StatCard({ label, value, icon, trend, color = 'primary' }: StatC
   );
 }
 
-const styles = StyleSheet.create({
-  gradient: {
-    borderRadius: 16,
-  },
-});

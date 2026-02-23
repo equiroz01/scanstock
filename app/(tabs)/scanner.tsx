@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, Animated, Pressable, Dimensions } from 'react-n
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Button } from '@/components/ui/Button';
@@ -149,75 +148,42 @@ export default function ScannerScreen() {
 
   if (!permission.granted) {
     return (
-      <View className="flex-1">
-        <LinearGradient
-          colors={['#4a90b8', '#30638e', '#003d5b', '#002a3f']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          className="flex-1 items-center justify-center px-8"
-        >
-          {/* Decorative circles */}
+      <View style={{ flex: 1, backgroundColor: '#1a2433', alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32 }}>
           <View
-            className="absolute -top-20 -right-20 w-64 h-64 rounded-full"
-            style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}
-          />
-          <View
-            className="absolute top-40 -left-10 w-40 h-40 rounded-full"
-            style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
-          />
-          <View
-            className="absolute -bottom-16 right-10 w-48 h-48 rounded-full"
-            style={{ backgroundColor: 'rgba(255,255,255,0.04)' }}
-          />
-
-          <View
-            className="w-28 h-28 rounded-3xl items-center justify-center mb-8"
             style={{
-              backgroundColor: 'rgba(255,255,255,0.15)',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.3,
-              shadowRadius: 16,
+              width: 96,
+              height: 96,
+              borderRadius: 24,
+              backgroundColor: 'rgba(255,255,255,0.1)',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginBottom: 32,
             }}
           >
-            <View
-              className="w-20 h-20 rounded-2xl items-center justify-center"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-            >
-              <Ionicons name="camera" size={44} color="white" />
-            </View>
+            <Ionicons name="camera" size={44} color="white" />
           </View>
 
-          <Text className="text-white text-3xl font-bold text-center mb-3">
+          <Text style={{ color: '#ffffff', fontSize: 28, fontWeight: '700', textAlign: 'center', marginBottom: 12 }}>
             {t.scanner.cameraAccess}
           </Text>
-          <Text
-            className="text-base text-center mb-10 leading-6 px-4"
-            style={{ color: 'rgba(255,255,255,0.75)' }}
-          >
+          <Text style={{ color: 'rgba(255,255,255,0.6)', fontSize: 16, textAlign: 'center', marginBottom: 40, lineHeight: 24, paddingHorizontal: 16 }}>
             {t.scanner.cameraAccessDescription}
           </Text>
 
           <Pressable
             onPress={requestPermission}
-            className="overflow-hidden rounded-2xl"
             style={{
-              shadowColor: '#fff',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 12,
-              elevation: 8,
+              backgroundColor: '#ffffff',
+              borderRadius: 14,
+              paddingHorizontal: 28,
+              paddingVertical: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
             }}
           >
-            <View
-              className="px-8 py-4 flex-row items-center"
-              style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
-            >
-              <Ionicons name="camera" size={22} color="white" />
-              <Text className="text-white font-bold text-lg ml-3">{t.scanner.allowCameraAccess}</Text>
-            </View>
+            <Ionicons name="camera" size={20} color="#1a2433" />
+            <Text style={{ color: '#1a2433', fontWeight: '600', fontSize: 16, marginLeft: 8 }}>{t.scanner.allowCameraAccess}</Text>
           </Pressable>
-        </LinearGradient>
       </View>
     );
   }
@@ -337,12 +303,7 @@ export default function ScannerScreen() {
                 }],
               }}
             >
-              <LinearGradient
-                colors={['transparent', '#5fad41', 'transparent']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 0 }}
-                style={{ height: 3, borderRadius: 2 }}
-              />
+              <View style={{ height: 3, borderRadius: 2, backgroundColor: '#5fad41' }} />
             </Animated.View>
           )}
 
