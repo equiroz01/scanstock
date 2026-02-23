@@ -117,6 +117,12 @@ export const en = {
     failedRefresh: 'Failed to refresh',
     updatingInventory: 'Updating inventory...',
     pullToRefresh: 'Pull to refresh',
+    recentProducts: 'Recent Products',
+    viewAll: 'View All',
+    outOfStock: 'Out of stock',
+    lowStock: 'Low stock',
+    totalItems: 'Total items',
+    dashboard: 'Dashboard',
   },
 
   // Time

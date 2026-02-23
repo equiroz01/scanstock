@@ -119,6 +119,12 @@ export const es: Translations = {
     failedRefresh: 'Error al actualizar',
     updatingInventory: 'Actualizando inventario...',
     pullToRefresh: 'Desliza para actualizar',
+    recentProducts: 'Productos Recientes',
+    viewAll: 'Ver Todo',
+    outOfStock: 'Sin stock',
+    lowStock: 'Stock bajo',
+    totalItems: 'Total productos',
+    dashboard: 'Panel',
   },
 
   // Time

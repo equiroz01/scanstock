@@ -6,7 +6,6 @@ import {
   RefreshControl,
   Pressable,
   Animated,
-  ScrollView,
   Alert,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
@@ -47,19 +46,6 @@ export default function InventoryScreen() {
   const toast = useToast();
   const { t } = useI18n();
 
-  // Helper to format relative time
-  const getRelativeTime = useCallback((date: Date): string => {
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-
-    if (diffSec < 60) return t.time.justNow;
-    if (diffMin < 60) return `${diffMin}${t.time.minutesAgo}`;
-    if (diffHour < 24) return `${diffHour}${t.time.hoursAgo}`;
-    return date.toLocaleDateString();
-  }, [t]);
   const [refreshing, setRefreshing] = useState(false);
   const [activeFilter, setActiveFilter] = useState<'all' | 'low' | 'out'>('all');
   const [sortBy, setSortBy] = useState<SortOption>('recent');
@@ -69,11 +55,10 @@ export default function InventoryScreen() {
   const sortMenuAnim = useRef(new Animated.Value(0)).current;
   const refreshRotation = useRef(new Animated.Value(0)).current;
   const refreshScale = useRef(new Animated.Value(1)).current;
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const headerPulse = useRef(new Animated.Value(1)).current;
   const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
-  // Debounced search - local value updates immediately, search executes after delay
+  // Debounced search
   const {
     value: localSearchQuery,
     debouncedValue: debouncedSearchQuery,
@@ -89,7 +74,6 @@ export default function InventoryScreen() {
     loadProducts,
     searchProducts,
     setSearchQuery,
-    updateStock,
     deleteProduct,
   } = useProductStore();
 
@@ -99,7 +83,6 @@ export default function InventoryScreen() {
       setSearchQuery(debouncedSearchQuery);
       searchProducts(debouncedSearchQuery);
     } else if (debouncedSearchQuery === '' && searchQuery !== '') {
-      // Only reload when clearing search (not on initial mount)
       setSearchQuery('');
       loadProducts();
     }
@@ -119,7 +102,6 @@ export default function InventoryScreen() {
   const filteredProducts = useMemo(() => {
     let filtered = products;
 
-    // Apply filter
     switch (activeFilter) {
       case 'low':
         filtered = products.filter(p => p.stock > 0 && p.stock <= 5);
@@ -129,7 +111,6 @@ export default function InventoryScreen() {
         break;
     }
 
-    // Apply sort
     const sorted = [...filtered].sort((a, b) => {
       switch (sortBy) {
         case 'name_asc':
@@ -155,7 +136,7 @@ export default function InventoryScreen() {
 
   const handleFilterChange = (filter: 'all' | 'low' | 'out') => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    setActiveFilter(filter);
+    setActiveFilter(prev => prev === filter ? 'all' : filter);
   };
 
   const toggleSortMenu = () => {
@@ -183,10 +164,9 @@ export default function InventoryScreen() {
 
   const currentSort = sortOptionsConfig.find(o => o.value === sortBy);
 
-  // Animated refresh with rotation
+  // Animated refresh
   useEffect(() => {
     if (refreshing) {
-      // Start rotation animation - use false since we call setValue() to reset
       Animated.loop(
         Animated.timing(refreshRotation, {
           toValue: 1,
@@ -194,7 +174,6 @@ export default function InventoryScreen() {
           useNativeDriver: false,
         })
       ).start();
-      // Pulse scale
       Animated.loop(
         Animated.sequence([
           Animated.timing(refreshScale, {
@@ -210,7 +189,6 @@ export default function InventoryScreen() {
         ])
       ).start();
     } else {
-      // Reset animations
       refreshRotation.stopAnimation();
       refreshScale.stopAnimation();
       refreshRotation.setValue(0);
@@ -228,11 +206,8 @@ export default function InventoryScreen() {
       } else {
         await loadProducts();
       }
-      // Success feedback
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      setLastUpdated(new Date());
 
-      // Pulse animation on header after refresh
       Animated.sequence([
         Animated.timing(headerPulse, {
           toValue: 1.02,
@@ -255,7 +230,6 @@ export default function InventoryScreen() {
     }
   }, [searchQuery, searchProducts, loadProducts, toast, headerPulse, t]);
 
-  // handleSearch now just updates local value - debounce handles the rest
   const handleSearch = useCallback(
     (query: string) => {
       setLocalSearchQuery(query);
@@ -290,7 +264,6 @@ export default function InventoryScreen() {
             text: t.common.delete,
             style: 'destructive',
             onPress: () => {
-              // Start animation
               setDeletingProductId(productId);
               Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
             },
@@ -301,7 +274,6 @@ export default function InventoryScreen() {
     [t]
   );
 
-  // Execute delete after animation completes
   const executeDelete = useCallback(
     async (productId: string, productName: string) => {
       try {
@@ -362,9 +334,9 @@ export default function InventoryScreen() {
   });
 
   const renderHeader = () => (
-    <View className="mb-4">
-      {/* Stats Dashboard */}
-      {!localSearchQuery && products.length > 0 && (
+    <View className="mb-2">
+      {/* Stats Dashboard - always visible (except when searching) */}
+      {!localSearchQuery && (
         <InventoryStats
           totalProducts={stats.totalProducts}
           totalStock={stats.totalStock}
@@ -387,105 +359,38 @@ export default function InventoryScreen() {
         </View>
       )}
 
-      {/* Quick filters and Sort */}
-      {!localSearchQuery && products.length > 0 && (
+      {/* Section header + Sort */}
+      {!localSearchQuery && (
         <View className="mb-2">
-          {/* Filter and Sort row */}
-          <View className="flex-row items-center justify-between mb-2">
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ gap: 8 }}
-            >
+          <View className="flex-row items-center justify-between">
+            <Text className="text-lg font-bold text-dark-900">
+              {t.inventory.recentProducts}
+            </Text>
+            <View className="flex-row items-center">
+              {/* Sort Button */}
               <Pressable
-                onPress={() => handleFilterChange('all')}
-                className={`px-4 py-2 border ${
-                  activeFilter === 'all'
-                    ? 'bg-primary-600 border-primary-600'
-                    : 'bg-white border-dark-200'
+                onPress={toggleSortMenu}
+                className={`px-3 py-1.5 border flex-row items-center ${
+                  showSortMenu ? 'bg-dark-100 border-dark-300' : 'bg-white border-dark-200'
                 }`}
                 style={{ borderRadius: 9999 }}
               >
-                <Text
-                  className={`text-sm font-medium ${
-                    activeFilter === 'all' ? 'text-white' : 'text-dark-600'
-                  }`}
-                >
-                  {t.common.all} ({stats.totalProducts})
+                <Ionicons
+                  name={currentSort?.icon || 'swap-vertical'}
+                  size={14}
+                  color="#475569"
+                />
+                <Text className="text-dark-600 text-xs font-medium ml-1">
+                  {t.sort[currentSort?.labelKey || 'recent']}
                 </Text>
+                <Ionicons
+                  name={showSortMenu ? 'chevron-up' : 'chevron-down'}
+                  size={12}
+                  color="#94a3b8"
+                  style={{ marginLeft: 2 }}
+                />
               </Pressable>
-
-              {stats.lowStock > 0 && (
-                <Pressable
-                  onPress={() => handleFilterChange('low')}
-                  className={`px-4 py-2 border flex-row items-center ${
-                    activeFilter === 'low'
-                      ? 'bg-warning-500 border-warning-500'
-                      : 'bg-warning-50 border-warning-200'
-                  }`}
-                  style={{ borderRadius: 9999 }}
-                >
-                  <Ionicons
-                    name="alert-circle"
-                    size={14}
-                    color={activeFilter === 'low' ? 'white' : '#d97706'}
-                  />
-                  <Text
-                    className={`text-sm font-medium ml-1 ${
-                      activeFilter === 'low' ? 'text-white' : 'text-warning-700'
-                    }`}
-                  >
-                    {t.common.low} ({stats.lowStock})
-                  </Text>
-                </Pressable>
-              )}
-
-              {stats.outOfStock > 0 && (
-                <Pressable
-                  onPress={() => handleFilterChange('out')}
-                  className={`px-4 py-2 border flex-row items-center ${
-                    activeFilter === 'out'
-                      ? 'bg-error-500 border-error-500'
-                      : 'bg-error-50 border-error-200'
-                  }`}
-                  style={{ borderRadius: 9999 }}
-                >
-                  <Ionicons
-                    name="close-circle"
-                    size={14}
-                    color={activeFilter === 'out' ? 'white' : '#dc2626'}
-                  />
-                  <Text
-                    className={`text-sm font-medium ml-1 ${
-                      activeFilter === 'out' ? 'text-white' : 'text-error-700'
-                    }`}
-                  >
-                    {t.common.out} ({stats.outOfStock})
-                  </Text>
-                </Pressable>
-              )}
-            </ScrollView>
-
-            {/* Sort Button */}
-            <Pressable
-              onPress={toggleSortMenu}
-              className={`ml-2 px-3 py-2 border flex-row items-center ${
-                showSortMenu ? 'bg-dark-100 border-dark-300' : 'bg-white border-dark-200'
-              }`}
-              style={{ borderRadius: 9999 }}
-            >
-              <Ionicons
-                name={currentSort?.icon || 'swap-vertical'}
-                size={16}
-                color="#475569"
-              />
-              <Ionicons
-                name={showSortMenu ? 'chevron-up' : 'chevron-down'}
-                size={14}
-                color="#94a3b8"
-                style={{ marginLeft: 2 }}
-              />
-            </Pressable>
+            </View>
           </View>
 
           {/* Sort Dropdown Menu */}
@@ -500,7 +405,7 @@ export default function InventoryScreen() {
                   }),
                 }],
               }}
-              className="bg-white rounded-2xl border border-dark-200 overflow-hidden mb-2"
+              className="bg-white rounded-2xl border border-dark-200 overflow-hidden mt-2"
             >
               {sortOptionsConfig.map((option, index) => (
                 <Pressable
@@ -536,32 +441,24 @@ export default function InventoryScreen() {
 
   return (
     <View className="flex-1" style={{ backgroundColor: '#f5f6fa' }}>
-      {/* Header with Search */}
+      {/* Header with App Icon + Search */}
       <View
         className="bg-white"
-        style={{ paddingTop: insets.top }}
+        style={{ paddingTop: insets.top, overflow: 'visible' }}
       >
         <Animated.View
           className="px-4 py-3"
-          style={{ transform: [{ scale: headerPulse }] }}
+          style={{ transform: [{ scale: headerPulse }], overflow: 'visible' }}
         >
           <View className="flex-row items-center justify-between mb-4">
-            <View>
-              <Text className="text-2xl font-bold text-dark-900">{t.inventory.title}</Text>
-              <View className="flex-row items-center mt-1">
-                <Text className="text-dark-400 text-sm">
-                  {products.length} {t.common.products}
-                </Text>
-                {lastUpdated && (
-                  <>
-                    <Text className="text-dark-300 text-sm mx-1">•</Text>
-                    <Ionicons name="sync" size={12} color="#94a3b8" />
-                    <Text className="text-dark-400 text-sm ml-1">
-                      {getRelativeTime(lastUpdated)}
-                    </Text>
-                  </>
-                )}
+            <View className="flex-row items-center">
+              <View
+                className="w-10 h-10 rounded-xl items-center justify-center mr-3"
+                style={{ backgroundColor: '#eff6ff' }}
+              >
+                <Ionicons name="cube" size={22} color="#2563eb" />
               </View>
+              <Text className="text-2xl font-bold text-dark-900">ScanStock</Text>
             </View>
             <Pressable
               onPress={() => router.push('/product/new')}
@@ -569,13 +466,15 @@ export default function InventoryScreen() {
               accessibilityLabel="Add new product"
               accessibilityRole="button"
               style={{
-                width: 40,
-                height: 40,
-                borderRadius: 20,
-                backgroundColor: '#1e293b',
+                width: 42,
+                height: 42,
+                borderRadius: 21,
+                backgroundColor: '#ffffff',
+                borderWidth: 1.5,
+                borderColor: '#e2e8f0',
               }}
             >
-              <Ionicons name="add" size={24} color="white" />
+              <Ionicons name="add" size={24} color="#1e293b" />
             </Pressable>
           </View>
           <SearchBar
@@ -584,6 +483,7 @@ export default function InventoryScreen() {
             placeholder={t.products.searchProducts}
             onClear={handleClearSearch}
             isSearching={isSearching}
+            onFilterPress={toggleSortMenu}
           />
         </Animated.View>
       </View>
@@ -620,8 +520,6 @@ export default function InventoryScreen() {
                 <ProductCard
                   product={item}
                   onPress={() => handleProductPress(item.id)}
-                  onIncrement={() => updateStock(item.id, 1)}
-                  onDecrement={() => updateStock(item.id, -1)}
                   searchQuery={localSearchQuery}
                 />
               </SwipeableRow>
@@ -709,7 +607,6 @@ export default function InventoryScreen() {
             className="w-full h-full items-center justify-center"
             style={{ borderRadius: 22 }}
           >
-            {/* Inner glow effect */}
             <View
               className="absolute inset-0 items-center justify-center"
               style={{ backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: 22 }}

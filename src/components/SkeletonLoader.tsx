@@ -126,79 +126,54 @@ function AnimatedSkeleton({ children, index = 0, delay = 100 }: AnimatedSkeleton
   );
 }
 
-// Product card skeleton with all new elements
+// Product card skeleton - compact row layout matching GoStock design
 export function ProductCardSkeleton({ index = 0 }: { index?: number }) {
   return (
     <AnimatedSkeleton index={index} delay={80}>
-      <View className="bg-white rounded-2xl p-4 mb-3 border border-dark-200">
-        <View className="flex-row">
-          {/* Image placeholder */}
-          <Skeleton width={80} height={80} borderRadius={16} />
+      <View className="bg-white rounded-2xl py-3 px-4 mb-2 border border-dark-100">
+        <View className="flex-row items-center">
+          {/* Image placeholder - 56x56 */}
+          <Skeleton width={56} height={56} borderRadius={12} />
 
           {/* Content */}
-          <View className="flex-1 ml-4 justify-between py-0.5">
-            <View>
-              {/* Badges row */}
-              <View className="flex-row gap-1.5 mb-1">
-                <SkeletonPulse width={48} height={18} borderRadius={9} />
-                <SkeletonPulse width={64} height={18} borderRadius={9} />
-              </View>
-              {/* Name */}
-              <Skeleton width="75%" height={18} borderRadius={4} />
-              {/* Barcode */}
-              <View className="flex-row items-center mt-1">
-                <SkeletonPulse width={14} height={14} borderRadius={2} />
-                <View className="ml-1 flex-1">
-                  <Skeleton width="50%" height={14} borderRadius={4} />
-                </View>
-              </View>
+          <View className="flex-1 ml-3 mr-3">
+            {/* Name */}
+            <Skeleton width="70%" height={16} borderRadius={4} />
+            {/* Price */}
+            <View className="mt-1.5">
+              <Skeleton width={60} height={14} borderRadius={4} />
             </View>
-
-            {/* Price and stock badge row */}
-            <View className="flex-row items-center justify-between mt-2">
-              <Skeleton width={70} height={22} borderRadius={4} />
-              <SkeletonPulse width={56} height={24} borderRadius={12} />
-            </View>
-
-            {/* Progress bar */}
-            <View className="mt-2">
-              <Skeleton width="100%" height={8} borderRadius={4} />
+            {/* Timestamp */}
+            <View className="mt-1">
+              <SkeletonPulse width={50} height={12} borderRadius={4} />
             </View>
           </View>
-        </View>
 
-        {/* Stock controls */}
-        <View className="flex-row items-center justify-end mt-3 pt-3 border-t border-dark-100">
-          <SkeletonPulse width={40} height={14} borderRadius={4} />
-          <View className="ml-3">
-            <Skeleton width={40} height={40} borderRadius={12} />
-          </View>
-          <View className="mx-4">
-            <SkeletonPulse width={32} height={24} borderRadius={4} />
-          </View>
-          <Skeleton width={40} height={40} borderRadius={12} />
+          {/* Stock badge */}
+          <SkeletonPulse width={56} height={24} borderRadius={12} />
         </View>
       </View>
     </AnimatedSkeleton>
   );
 }
 
-// Stats card skeleton with gradient background simulation
+// Stats card skeleton - single card for the 3-up row
 export function StatsCardSkeleton({ index = 0 }: { index?: number }) {
   return (
     <AnimatedSkeleton index={index} delay={60}>
-      <View className="rounded-2xl p-4 min-h-[100px] bg-dark-200 overflow-hidden">
-        <View className="flex-row items-center justify-between mb-2">
-          {/* Icon */}
-          <SkeletonPulse width={40} height={40} borderRadius={12} />
-          {/* Badge */}
-          <SkeletonPulse width={28} height={20} borderRadius={10} />
+      <View
+        className="flex-1 bg-white rounded-2xl items-center py-4 px-2"
+        style={{ borderWidth: 1, borderColor: '#edf0f2' }}
+      >
+        {/* Icon */}
+        <SkeletonPulse width={44} height={44} borderRadius={12} />
+        {/* Value */}
+        <View className="mt-2.5">
+          <SkeletonPulse width={36} height={24} borderRadius={4} />
         </View>
         {/* Label */}
-        <SkeletonPulse width="50%" height={12} borderRadius={4} />
-        {/* Value */}
         <View className="mt-1">
-          <SkeletonPulse width="60%" height={24} borderRadius={4} />
+          <SkeletonPulse width={56} height={12} borderRadius={4} />
         </View>
       </View>
     </AnimatedSkeleton>
@@ -228,38 +203,31 @@ export function HealthCardSkeleton({ index = 0 }: { index?: number }) {
   );
 }
 
-// Full inventory loading skeleton
+// Full inventory loading skeleton - 3 stat cards in a row + compact product rows
 export function InventoryLoadingSkeleton() {
   return (
     <View>
-      {/* Stats row 1 */}
-      <View className="flex-row gap-3 mb-3">
+      {/* 3 Stats cards in a single row */}
+      <View className="flex-row gap-3 mb-4">
         <View className="flex-1">
           <StatsCardSkeleton index={0} />
         </View>
         <View className="flex-1">
           <StatsCardSkeleton index={1} />
         </View>
-      </View>
-
-      {/* Stats row 2 (Value and Health) */}
-      <View className="flex-row gap-3 mb-4">
         <View className="flex-1">
           <StatsCardSkeleton index={2} />
         </View>
-        <View className="flex-1">
-          <HealthCardSkeleton index={3} />
-        </View>
       </View>
 
-      {/* Filter pills skeleton */}
-      <View className="flex-row gap-2 mb-4">
-        <SkeletonPulse width={80} height={36} borderRadius={18} />
-        <SkeletonPulse width={72} height={36} borderRadius={18} />
-        <SkeletonPulse width={68} height={36} borderRadius={18} />
+      {/* Section header skeleton */}
+      <View className="flex-row items-center justify-between mb-3">
+        <SkeletonPulse width={130} height={18} borderRadius={4} />
+        <SkeletonPulse width={56} height={14} borderRadius={4} />
       </View>
 
-      {/* Product cards */}
+      {/* Compact product card rows */}
+      <ProductCardSkeleton index={3} />
       <ProductCardSkeleton index={4} />
       <ProductCardSkeleton index={5} />
       <ProductCardSkeleton index={6} />
