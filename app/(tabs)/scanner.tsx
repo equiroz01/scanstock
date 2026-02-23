@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Haptics from 'expo-haptics';
 import { Button } from '@/components/ui/Button';
 import { useProductStore } from '@/stores/useProductStore';
+import { useI18n } from '@/i18n';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SCAN_FRAME_SIZE = SCREEN_WIDTH * 0.75;
@@ -15,6 +16,7 @@ const SCAN_FRAME_SIZE = SCREEN_WIDTH * 0.75;
 export default function ScannerScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const { t } = useI18n();
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [flashOn, setFlashOn] = useState(false);
@@ -140,7 +142,7 @@ export default function ScannerScreen() {
         <View className="w-12 h-12 rounded-full bg-white/10 items-center justify-center">
           <Ionicons name="camera-outline" size={24} color="white" />
         </View>
-        <Text className="text-white mt-4">Initializing camera...</Text>
+        <Text className="text-white mt-4">{t.scanner.initializingCamera}</Text>
       </View>
     );
   }
@@ -187,13 +189,13 @@ export default function ScannerScreen() {
           </View>
 
           <Text className="text-white text-3xl font-bold text-center mb-3">
-            Camera Access
+            {t.scanner.cameraAccess}
           </Text>
           <Text
             className="text-base text-center mb-10 leading-6 px-4"
             style={{ color: 'rgba(255,255,255,0.75)' }}
           >
-            ScanStock needs access to your camera to scan product barcodes
+            {t.scanner.cameraAccessDescription}
           </Text>
 
           <Pressable
@@ -212,7 +214,7 @@ export default function ScannerScreen() {
               style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
             >
               <Ionicons name="camera" size={22} color="white" />
-              <Text className="text-white font-bold text-lg ml-3">Allow Camera Access</Text>
+              <Text className="text-white font-bold text-lg ml-3">{t.scanner.allowCameraAccess}</Text>
             </View>
           </Pressable>
         </LinearGradient>
@@ -228,6 +230,7 @@ export default function ScannerScreen() {
         enableTorch={flashOn}
         barcodeScannerSettings={{
           barcodeTypes: [
+            'qr',
             'ean13',
             'ean8',
             'upc_a',
@@ -261,18 +264,22 @@ export default function ScannerScreen() {
         <Pressable
           onPress={() => router.back()}
           className="w-10 h-10 rounded-full bg-black/30 items-center justify-center"
+          accessibilityLabel="Close scanner"
+          accessibilityRole="button"
         >
           <Ionicons name="close" size={24} color="white" />
         </Pressable>
 
         <View className="flex-row items-center bg-black/30 rounded-full px-4 py-2">
           <View className="w-2 h-2 rounded-full bg-green-400 mr-2" />
-          <Text className="text-white font-medium">Camera Active</Text>
+          <Text className="text-white font-medium">{t.scanner.cameraActive}</Text>
         </View>
 
         <Pressable
           onPress={() => setFlashOn(!flashOn)}
           className={`w-10 h-10 rounded-full items-center justify-center ${flashOn ? 'bg-warning-500' : 'bg-black/30'}`}
+          accessibilityLabel={flashOn ? 'Turn off flash' : 'Turn on flash'}
+          accessibilityRole="button"
         >
           <Ionicons name={flashOn ? 'flash' : 'flash-outline'} size={22} color="white" />
         </Pressable>
@@ -364,13 +371,13 @@ export default function ScannerScreen() {
         {scanned && lastScannedCode ? (
           <View className="items-center">
             <View className="bg-white/10 rounded-2xl px-6 py-4 mb-4">
-              <Text className="text-white/60 text-sm text-center mb-1">Scanned Code</Text>
+              <Text className="text-white/60 text-sm text-center mb-1">{t.scanner.scannedCode}</Text>
               <Text className="text-white text-xl font-mono font-bold text-center">
                 {lastScannedCode}
               </Text>
             </View>
             <Button
-              title="Scan Another"
+              title={t.scanner.scanAnother}
               onPress={handleScanAgain}
               variant="secondary"
               icon="scan-outline"
@@ -381,7 +388,7 @@ export default function ScannerScreen() {
           <View className="items-center">
             <View className="bg-white/10 rounded-2xl px-6 py-4 mb-4">
               <Text className="text-white text-base text-center">
-                Point camera at a barcode
+                {t.scanner.pointCamera}
               </Text>
             </View>
             {showTimeout && (
@@ -389,9 +396,9 @@ export default function ScannerScreen() {
                 <View className="flex-row items-start">
                   <Ionicons name="bulb" size={20} color="white" />
                   <View className="flex-1 ml-2">
-                    <Text className="text-white font-semibold text-sm mb-1">Tip</Text>
+                    <Text className="text-white font-semibold text-sm mb-1">{t.common.tip}</Text>
                     <Text className="text-white text-xs leading-5">
-                      Try better lighting, clean the barcode, or add the product manually below
+                      {t.scanner.scanTip}
                     </Text>
                   </View>
                 </View>
@@ -402,7 +409,7 @@ export default function ScannerScreen() {
               className="flex-row items-center"
             >
               <Ionicons name="create-outline" size={18} color="rgba(255,255,255,0.7)" />
-              <Text className="text-white/70 ml-2">Or add product manually</Text>
+              <Text className="text-white/70 ml-2">{t.scanner.addManually}</Text>
             </Pressable>
           </View>
         )}

@@ -49,11 +49,32 @@ export const ProductRepository = {
   async search(query: string): Promise<Product[]> {
     const db = await getDatabase();
     const searchTerm = `%${query}%`;
+
+    // SQLite LIKE is case-insensitive by default for ASCII
+    // For more complex search, we fetch all and filter in JS
     const rows = await db.getAllAsync<Record<string, unknown>>(
-      'SELECT * FROM products WHERE name LIKE ? OR barcode LIKE ? ORDER BY updated_at DESC',
-      [searchTerm, searchTerm]
+      'SELECT * FROM products ORDER BY updated_at DESC'
     );
-    return rows.map(mapRowToProduct);
+
+    const products = rows.map(mapRowToProduct);
+    const normalizedQuery = query.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+
+    if (!normalizedQuery) {
+      return products;
+    }
+
+    // Filter products that match the search query
+    return products.filter(product => {
+      const normalizedName = product.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+      const normalizedBarcode = product.barcode?.toLowerCase() || '';
+      const priceString = product.price.toString();
+
+      return (
+        normalizedName.includes(normalizedQuery) ||
+        normalizedBarcode.includes(normalizedQuery) ||
+        priceString.includes(normalizedQuery)
+      );
+    });
   },
 
   async create(input: CreateProductInput): Promise<Product> {

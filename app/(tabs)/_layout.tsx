@@ -1,62 +1,78 @@
 import { Tabs } from 'expo-router';
+import { View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useI18n } from '@/i18n';
 
 export default function TabLayout() {
+  const { t } = useI18n();
+
   return (
     <Tabs
       screenOptions={{
-        headerShown: true,
-        headerStyle: {
-          backgroundColor: '#ffffff',
-        },
-        headerTitleStyle: {
-          fontWeight: '600',
-          fontSize: 18,
-        },
-        headerShadowVisible: false,
-        tabBarActiveTintColor: '#4f46e5',
+        headerShown: false,
+        tabBarActiveTintColor: '#1e293b',
         tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: {
-          backgroundColor: '#ffffff',
+          position: 'absolute',
+          backgroundColor: 'rgba(255, 255, 255, 0.97)',
           borderTopWidth: 1,
-          borderTopColor: '#e2e8f0',
+          borderTopColor: '#edf0f2',
           paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
+          paddingBottom: 28,
+          height: 80,
+          shadowColor: '#1a2433',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.04,
+          shadowRadius: 6,
+          elevation: 4,
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '500',
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: 2,
+          letterSpacing: 0.2,
+        },
+        tabBarIconStyle: {
+          marginTop: 4,
         },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Inventory',
-          headerTitle: 'ScanStock',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="cube-outline" size={size} color={color} />
+          title: t.tabs.inventory,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'cube' : 'cube-outline'}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="scanner"
         options={{
-          title: 'Scan',
-          headerTitle: 'Scanner',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="barcode-outline" size={size} color={color} />
+          title: t.tabs.scan,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'scan' : 'scan-outline'}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Settings',
-          headerTitle: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="settings-outline" size={size} color={color} />
+          title: t.tabs.settings,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'settings' : 'settings-outline'}
+              size={24}
+              color={color}
+            />
           ),
         }}
       />

@@ -1,28 +1,55 @@
 import { useState, useEffect, useCallback } from 'react';
-import { type ProductOrSubscription, type Purchase, type PurchaseError } from 'react-native-iap';
-import { IAPService } from '@/services/iap/IAPService';
 import { usePlanStore } from '@/stores/usePlanStore';
-import { getPlanTypeFromProductId } from '@/constants/iap';
+import { IAP_PRODUCTS, getPlanTypeFromProductId } from '@/constants/iap';
 import type { PlanType } from '@/types/settings';
 
+interface MockProduct {
+  id: string;
+  title: string;
+  description: string;
+  displayPrice: string;
+}
+
 interface UseIAPReturn {
-  // State
-  products: ProductOrSubscription[];
-  subscriptions: ProductOrSubscription[];
+  products: MockProduct[];
+  subscriptions: MockProduct[];
   isLoading: boolean;
   isPurchasing: boolean;
   isRestoring: boolean;
   error: string | null;
-
-  // Actions
   purchase: (productId: string) => Promise<void>;
   restorePurchases: () => Promise<void>;
-  getProductById: (productId: string) => ProductOrSubscription | null;
+  getProductById: (productId: string) => MockProduct | null;
 }
 
+// Mock products for development/Expo Go
+const MOCK_PRODUCTS: MockProduct[] = [
+  {
+    id: IAP_PRODUCTS.PRO_LOCAL,
+    title: 'Pro Local',
+    description: 'Backup and export features',
+    displayPrice: '$1.99',
+  },
+];
+
+const MOCK_SUBSCRIPTIONS: MockProduct[] = [
+  {
+    id: IAP_PRODUCTS.PRO_CLOUD_MONTHLY,
+    title: 'Pro Cloud Monthly',
+    description: 'Cloud backup and sync',
+    displayPrice: '$0.99/month',
+  },
+  {
+    id: IAP_PRODUCTS.PRO_CLOUD_YEARLY,
+    title: 'Pro Cloud Yearly',
+    description: 'Cloud backup and sync (save 17%)',
+    displayPrice: '$9.99/year',
+  },
+];
+
 export function useIAP(): UseIAPReturn {
-  const [products, setProducts] = useState<ProductOrSubscription[]>([]);
-  const [subscriptions, setSubscriptions] = useState<ProductOrSubscription[]>([]);
+  const [products, setProducts] = useState<MockProduct[]>([]);
+  const [subscriptions, setSubscriptions] = useState<MockProduct[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [isRestoring, setIsRestoring] = useState(false);
@@ -30,83 +57,31 @@ export function useIAP(): UseIAPReturn {
 
   const { setPlan } = usePlanStore();
 
-  // Initialize and load products
+  // Initialize with mock products
   useEffect(() => {
-    let mounted = true;
-
     const initIAP = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Initialize IAP
-        await IAPService.initialize();
+        // Simulate loading delay
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        if (!mounted) return;
-
-        // Load available products
-        const { products, subscriptions } = await IAPService.getAvailableProducts();
-
-        if (!mounted) return;
-
-        setProducts(products);
-        setSubscriptions(subscriptions);
+        setProducts(MOCK_PRODUCTS);
+        setSubscriptions(MOCK_SUBSCRIPTIONS);
       } catch (err) {
-        if (!mounted) return;
         console.error('Failed to initialize IAP:', err);
         setError(err instanceof Error ? err.message : 'Failed to load products');
       } finally {
-        if (mounted) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
     initIAP();
-
-    return () => {
-      mounted = false;
-      // Cleanup is handled by IAPService singleton
-    };
   }, []);
 
   /**
-   * Handle successful purchase
-   */
-  const handlePurchaseSuccess = useCallback(
-    (purchase: Purchase) => {
-      console.log('Purchase successful:', purchase);
-
-      // Update plan based on product ID
-      const planType = getPlanTypeFromProductId(purchase.productId);
-      if (planType) {
-        setPlan(planType);
-      }
-
-      setIsPurchasing(false);
-      setError(null);
-    },
-    [setPlan]
-  );
-
-  /**
-   * Handle purchase error
-   */
-  const handlePurchaseError = useCallback((err: PurchaseError) => {
-    console.error('Purchase error:', err);
-
-    // User cancelled is not an error to show
-    if (err.code && String(err.code).includes('USER_CANCELLED')) {
-      setError(null);
-    } else {
-      setError(err.message || 'Purchase failed');
-    }
-
-    setIsPurchasing(false);
-  }, []);
-
-  /**
-   * Purchase a product
+   * Purchase a product (mock implementation)
    */
   const purchase = useCallback(
     async (productId: string) => {
@@ -114,62 +89,51 @@ export function useIAP(): UseIAPReturn {
         setIsPurchasing(true);
         setError(null);
 
-        await IAPService.purchaseProduct(
-          productId,
-          handlePurchaseSuccess,
-          handlePurchaseError
-        );
+        // Simulate purchase delay
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        // Update plan based on product ID
+        const planType = getPlanTypeFromProductId(productId);
+        if (planType) {
+          setPlan(planType);
+          console.log(`Mock purchase successful: ${planType}`);
+        }
       } catch (err) {
-        console.error('Purchase initiation failed:', err);
-        setError(err instanceof Error ? err.message : 'Failed to start purchase');
+        console.error('Purchase failed:', err);
+        setError(err instanceof Error ? err.message : 'Failed to complete purchase');
+      } finally {
         setIsPurchasing(false);
       }
     },
-    [handlePurchaseSuccess, handlePurchaseError]
+    [setPlan]
   );
 
   /**
-   * Restore previous purchases
+   * Restore previous purchases (mock implementation)
    */
   const restorePurchases = useCallback(async () => {
     try {
       setIsRestoring(true);
       setError(null);
 
-      const purchases = await IAPService.restorePurchases();
+      // Simulate restore delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Find the highest tier purchase
-      let highestPlan: PlanType = 'free';
-
-      for (const purchase of purchases) {
-        const planType = getPlanTypeFromProductId(purchase.productId);
-
-        if (planType === 'pro_cloud') {
-          highestPlan = 'pro_cloud';
-          break; // Cloud is highest, stop searching
-        } else if (planType === 'pro_local' && highestPlan === 'free') {
-          highestPlan = 'pro_local';
-        }
-      }
-
-      setPlan(highestPlan);
-
-      if (highestPlan !== 'free') {
-        console.log(`Restored plan: ${highestPlan}`);
-      }
+      // In mock mode, we don't have real purchases to restore
+      console.log('Mock restore complete - no purchases found');
     } catch (err) {
       console.error('Failed to restore purchases:', err);
       setError(err instanceof Error ? err.message : 'Failed to restore purchases');
     } finally {
       setIsRestoring(false);
     }
-  }, [setPlan]);
+  }, []);
 
   /**
    * Get product by ID
    */
   const getProductById = useCallback(
-    (productId: string): ProductOrSubscription | null => {
+    (productId: string): MockProduct | null => {
       const product = products.find(p => p.id === productId);
       if (product) return product;
 

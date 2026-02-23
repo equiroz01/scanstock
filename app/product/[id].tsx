@@ -21,8 +21,11 @@ import { ProductRepository } from '@/database/repositories/ProductRepository';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { StockBadge } from '@/components/ui/Badge';
+import { QRModal } from '@/components/QRModal';
 import { formatCurrency } from '@/utils/currency';
 import { savePhoto, deletePhoto } from '@/services/photos/photoStorage';
+import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/i18n';
 import type { Product } from '@/types/product';
 
 export default function ProductDetailScreen() {
@@ -30,11 +33,14 @@ export default function ProductDetailScreen() {
   const insets = useSafeAreaInsets();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { updateProduct, updateStock, deleteProduct } = useProductStore();
+  const toast = useToast();
+  const { t } = useI18n();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [showQRModal, setShowQRModal] = useState(false);
 
   // Edit form state
   const [name, setName] = useState('');
@@ -66,7 +72,7 @@ export default function ProductDetailScreen() {
         setPhotoUri(p.photoPath);
       }
     } catch (error) {
-      Alert.alert('Error', 'Failed to load product');
+      Alert.alert(t.common.error, t.products.failedLoad);
     } finally {
       setIsLoading(false);
     }
@@ -103,7 +109,7 @@ export default function ProductDetailScreen() {
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permission Required', 'Camera permission is needed to take photos');
+      Alert.alert(t.products.permissionRequired, t.products.cameraPermissionNeeded);
       return;
     }
 
@@ -121,11 +127,11 @@ export default function ProductDetailScreen() {
 
   const showImageOptions = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert('Change Photo', 'Choose an option', [
-      { text: 'Take Photo', onPress: takePhoto },
-      { text: 'Choose from Library', onPress: pickImage },
-      { text: 'Remove Photo', style: 'destructive', onPress: () => setPhotoUri(null) },
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t.products.changePhoto, '', [
+      { text: t.products.takePhoto, onPress: takePhoto },
+      { text: t.products.choosePhoto, onPress: pickImage },
+      { text: t.products.removePhoto, style: 'destructive', onPress: () => setPhotoUri(null) },
+      { text: t.common.cancel, style: 'cancel' },
     ]);
   };
 
@@ -141,7 +147,7 @@ export default function ProductDetailScreen() {
     }
   };
 
-  const handleStockChange = (text: string) => {
+  const handleStockTextChange = (text: string) => {
     // Solo permitir números positivos
     const cleaned = text.replace(/[^0-9]/g, '');
     const num = parseInt(cleaned) || 0;
@@ -151,7 +157,7 @@ export default function ProductDetailScreen() {
   const handleSave = async () => {
     if (!id || !name.trim()) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Error', 'Product name is required');
+      Alert.alert(t.common.error, t.products.productNameRequired);
       return;
     }
 
@@ -181,9 +187,10 @@ export default function ProductDetailScreen() {
       setProduct(updated);
       setIsEditing(false);
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success(t.products.updatedSuccessfully);
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert('Error', 'Failed to update product');
+      toast.error(t.products.failedUpdate);
     } finally {
       setIsSaving(false);
     }
@@ -192,22 +199,24 @@ export default function ProductDetailScreen() {
   const handleDelete = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     Alert.alert(
-      'Delete Product',
-      'Are you sure you want to delete this product? This action cannot be undone.',
+      t.products.deleteProduct,
+      t.products.deleteConfirm,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Delete',
+          text: t.common.delete,
           style: 'destructive',
           onPress: async () => {
             if (!id) return;
+            const productName = product?.name || 'Product';
             try {
               await deleteProduct(id);
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+              toast.success(`"${productName}" ${t.products.deleted}`);
               router.back();
             } catch (error) {
               Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-              Alert.alert('Error', 'Failed to delete product');
+              toast.error(t.errors.failedDelete);
             }
           },
         },
@@ -233,7 +242,7 @@ export default function ProductDetailScreen() {
         <View className="w-16 h-16 rounded-2xl bg-primary-100 items-center justify-center mb-4">
           <Ionicons name="cube-outline" size={32} color="#30638e" />
         </View>
-        <Text className="text-dark-500">Loading product...</Text>
+        <Text className="text-dark-500">{t.products.loadingProduct}</Text>
       </View>
     );
   }
@@ -244,9 +253,9 @@ export default function ProductDetailScreen() {
         <View className="w-16 h-16 rounded-2xl bg-error-100 items-center justify-center mb-4">
           <Ionicons name="alert-circle-outline" size={32} color="#dc2626" />
         </View>
-        <Text className="text-dark-900 font-semibold mb-2">Product not found</Text>
+        <Text className="text-dark-900 font-semibold mb-2">{t.products.productNotFound}</Text>
         <Pressable onPress={() => router.back()}>
-          <Text className="text-primary-600 font-medium">Go back</Text>
+          <Text className="text-primary-600 font-medium">{t.products.goBack}</Text>
         </Pressable>
       </View>
     );
@@ -256,7 +265,7 @@ export default function ProductDetailScreen() {
   const isLowStock = product.stock > 0 && product.stock <= 5;
 
   return (
-    <View className="flex-1 bg-dark-50">
+    <View className="flex-1" style={{ backgroundColor: '#f5f6fa' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -274,7 +283,7 @@ export default function ProductDetailScreen() {
               <Ionicons name="arrow-back" size={22} color="#475569" />
             </Pressable>
             <Text className="text-lg font-bold text-dark-900">
-              {isEditing ? 'Edit Product' : 'Product Details'}
+              {isEditing ? t.products.editProduct : t.products.productDetails}
             </Text>
             {!isEditing ? (
               <Pressable
@@ -296,7 +305,7 @@ export default function ProductDetailScreen() {
                 }}
                 className="px-3 py-2"
               >
-                <Text className="text-primary-600 font-semibold">Cancel</Text>
+                <Text className="text-primary-600 font-semibold">{t.common.cancel}</Text>
               </Pressable>
             )}
           </View>
@@ -345,7 +354,7 @@ export default function ProductDetailScreen() {
                       color={isEditing ? '#9299a3' : '#30638e'}
                     />
                     {isEditing && (
-                      <Text className="text-dark-400 text-sm font-medium mt-2">Add Photo</Text>
+                      <Text className="text-dark-400 text-sm font-medium mt-2">{t.products.addPhoto}</Text>
                     )}
                   </LinearGradient>
                 )}
@@ -356,37 +365,37 @@ export default function ProductDetailScreen() {
           {isEditing ? (
             /* Edit Form */
             <>
-              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-100">
+              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
                 <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
-                  Product Information
+                  {t.products.productInformation}
                 </Text>
                 <View className="gap-4">
                   <Input
-                    label="Product Name"
+                    label={t.products.productName}
                     value={name}
                     onChangeText={setName}
-                    placeholder="Enter product name"
+                    placeholder={t.products.enterProductName}
                     icon="cube-outline"
                   />
                   <Input
-                    label="Barcode"
+                    label={t.products.barcode}
                     value={barcode}
                     onChangeText={setBarcode}
-                    placeholder="Barcode"
+                    placeholder={t.products.barcode}
                     autoCapitalize="none"
                     icon="barcode-outline"
                   />
                 </View>
               </View>
 
-              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-100">
+              <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
                 <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
-                  Pricing & Stock
+                  {t.products.pricingStock}
                 </Text>
                 <View className="flex-row gap-4">
                   <View className="flex-1">
                     <Input
-                      label="Price"
+                      label={t.products.price}
                       value={price}
                       onChangeText={handlePriceChange}
                       placeholder="0.00"
@@ -396,12 +405,12 @@ export default function ProductDetailScreen() {
                   </View>
                   <View className="flex-1">
                     <Input
-                      label="Stock"
+                      label={t.products.stock}
                       value={stock}
-                      onChangeText={handleStockChange}
+                      onChangeText={handleStockTextChange}
                       placeholder="0"
                       keyboardType="numeric"
-                      suffix="units"
+                      suffix={t.badges.units}
                     />
                   </View>
                 </View>
@@ -413,14 +422,14 @@ export default function ProductDetailScreen() {
                 className="flex-row items-center justify-center py-4"
               >
                 <Ionicons name="trash-outline" size={20} color="#dc2626" />
-                <Text className="text-error-600 font-medium ml-2">Delete Product</Text>
+                <Text className="text-error-600 font-medium ml-2">{t.products.deleteProduct}</Text>
               </Pressable>
             </>
           ) : (
             /* View Mode */
             <>
               {/* Name & Price Card */}
-              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-100 items-center">
+              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-200 items-center">
                 <Text className="text-2xl font-bold text-dark-900 text-center">
                   {product.name}
                 </Text>
@@ -438,10 +447,10 @@ export default function ProductDetailScreen() {
               </View>
 
               {/* Stock Control Card */}
-              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-100">
+              <View className="bg-white rounded-2xl p-5 mb-4 border border-dark-200">
                 <View className="flex-row items-center justify-between mb-4">
                   <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider">
-                    Stock Level
+                    {t.products.stockLevel}
                   </Text>
                   <StockBadge stock={product.stock} />
                 </View>
@@ -545,20 +554,20 @@ export default function ProductDetailScreen() {
 
               {/* Stats */}
               <View className="flex-row gap-3 mb-4">
-                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-100">
+                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-200">
                   <View className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center mb-2">
                     <Ionicons name="wallet-outline" size={20} color="#30638e" />
                   </View>
-                  <Text className="text-dark-500 text-sm">Total Value</Text>
+                  <Text className="text-dark-500 text-sm">{t.products.totalValue}</Text>
                   <Text className="text-dark-900 text-lg font-bold">
                     {formatCurrency(product.price * product.stock)}
                   </Text>
                 </View>
-                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-100">
+                <View className="flex-1 bg-white rounded-2xl p-4 border border-dark-200">
                   <View className="w-10 h-10 rounded-xl bg-accent-100 items-center justify-center mb-2">
                     <Ionicons name="time-outline" size={20} color="#2d936c" />
                   </View>
-                  <Text className="text-dark-500 text-sm">Last Updated</Text>
+                  <Text className="text-dark-500 text-sm">{t.products.lastUpdated}</Text>
                   <Text className="text-dark-900 text-lg font-bold">
                     {new Date(product.updatedAt).toLocaleDateString()}
                   </Text>
@@ -566,7 +575,20 @@ export default function ProductDetailScreen() {
               </View>
 
               {/* Actions */}
-              <View className="bg-white rounded-2xl p-4 border border-dark-100">
+              <View className="bg-white rounded-2xl p-4 border border-dark-200">
+                <Pressable
+                  onPress={() => setShowQRModal(true)}
+                  className="flex-row items-center py-3"
+                >
+                  <View className="w-10 h-10 rounded-xl bg-accent-100 items-center justify-center">
+                    <Ionicons name="qr-code-outline" size={20} color="#2d936c" />
+                  </View>
+                  <Text className="flex-1 text-dark-900 font-medium ml-3">{t.products.viewQRCode}</Text>
+                  <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+                </Pressable>
+
+                <View className="h-px bg-dark-100 ml-[52px]" />
+
                 <Pressable
                   onPress={() => setIsEditing(true)}
                   className="flex-row items-center py-3"
@@ -574,7 +596,7 @@ export default function ProductDetailScreen() {
                   <View className="w-10 h-10 rounded-xl bg-primary-100 items-center justify-center">
                     <Ionicons name="create-outline" size={20} color="#30638e" />
                   </View>
-                  <Text className="flex-1 text-dark-900 font-medium ml-3">Edit Product</Text>
+                  <Text className="flex-1 text-dark-900 font-medium ml-3">{t.products.editProduct}</Text>
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </Pressable>
 
@@ -587,7 +609,7 @@ export default function ProductDetailScreen() {
                   <View className="w-10 h-10 rounded-xl bg-error-100 items-center justify-center">
                     <Ionicons name="trash-outline" size={20} color="#dc2626" />
                   </View>
-                  <Text className="flex-1 text-error-600 font-medium ml-3">Delete Product</Text>
+                  <Text className="flex-1 text-error-600 font-medium ml-3">{t.products.deleteProduct}</Text>
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 </Pressable>
               </View>
@@ -602,7 +624,7 @@ export default function ProductDetailScreen() {
             style={{ paddingBottom: insets.bottom + 16 }}
           >
             <Button
-              title="Save Changes"
+              title={t.products.saveChanges}
               onPress={handleSave}
               loading={isSaving}
               fullWidth
@@ -612,6 +634,13 @@ export default function ProductDetailScreen() {
           </View>
         )}
       </KeyboardAvoidingView>
+
+      {/* QR Modal */}
+      <QRModal
+        visible={showQRModal}
+        product={product}
+        onClose={() => setShowQRModal(false)}
+      />
     </View>
   );
 }

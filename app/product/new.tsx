@@ -20,12 +20,16 @@ import { useProductStore } from '@/stores/useProductStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { savePhoto } from '@/services/photos/photoStorage';
+import { useToast } from '@/hooks/useToast';
+import { useI18n } from '@/i18n';
 
 export default function NewProductScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ barcode?: string; fromScanner?: string }>();
   const addProduct = useProductStore(state => state.addProduct);
+  const toast = useToast();
+  const { t } = useI18n();
 
   const [name, setName] = useState('');
   const [barcode, setBarcode] = useState(params.barcode || '');
@@ -34,6 +38,7 @@ export default function NewProductScreen() {
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; price?: string }>({});
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
   const photoScale = useRef(new Animated.Value(1)).current;
   const formOpacity = useRef(new Animated.Value(0)).current;
@@ -49,6 +54,12 @@ export default function NewProductScreen() {
       useNativeDriver: true,
     }).start();
   }, [params.barcode, formOpacity]);
+
+  // Track unsaved changes
+  useEffect(() => {
+    const hasChanges = name.trim() !== '' || barcode.trim() !== '' || price !== '' || stock !== '0' || photoUri !== null;
+    setHasUnsavedChanges(hasChanges);
+  }, [name, barcode, price, stock, photoUri]);
 
   const animatePhoto = () => {
     Animated.sequence([
@@ -75,7 +86,7 @@ export default function NewProductScreen() {
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      Alert.alert('Permission Required', 'Camera permission is needed to take photos');
+      Alert.alert(t.products.permissionRequired, t.products.cameraPermissionNeeded);
       return;
     }
 
@@ -94,10 +105,10 @@ export default function NewProductScreen() {
 
   const showImageOptions = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    Alert.alert('Add Photo', 'Choose an option', [
-      { text: 'Take Photo', onPress: takePhoto },
-      { text: 'Choose from Library', onPress: pickImage },
-      { text: 'Cancel', style: 'cancel' },
+    Alert.alert(t.products.addPhoto, '', [
+      { text: t.products.takePhoto, onPress: takePhoto },
+      { text: t.products.choosePhoto, onPress: pickImage },
+      { text: t.common.cancel, style: 'cancel' },
     ]);
   };
 
@@ -130,12 +141,12 @@ export default function NewProductScreen() {
     const newErrors: { name?: string; price?: string } = {};
 
     if (!name.trim()) {
-      newErrors.name = 'Product name is required';
+      newErrors.name = t.products.productNameRequired;
     }
 
     const priceNum = parseFloat(price);
     if (price && (isNaN(priceNum) || priceNum < 0)) {
-      newErrors.price = 'Invalid price';
+      newErrors.price = t.products.invalidPrice;
     }
 
     setErrors(newErrors);
@@ -164,6 +175,7 @@ export default function NewProductScreen() {
       });
 
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      toast.success(`"${name.trim()}" ${t.products.addedToInventory}`);
 
       // If we came from scanner, go back to scanner for continuous scanning
       if (params.fromScanner === 'true') {
@@ -173,10 +185,7 @@ export default function NewProductScreen() {
       }
     } catch (error) {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-      Alert.alert(
-        'Error',
-        error instanceof Error ? error.message : 'Failed to save product'
-      );
+      toast.error(error instanceof Error ? error.message : t.products.failedSave);
     } finally {
       setIsLoading(false);
     }
@@ -186,8 +195,27 @@ export default function NewProductScreen() {
     router.push('/scanner');
   };
 
+  const handleBack = () => {
+    if (hasUnsavedChanges) {
+      Alert.alert(
+        t.products.unsavedChanges,
+        t.products.unsavedChangesMessage,
+        [
+          { text: t.common.cancel, style: 'cancel' },
+          {
+            text: t.products.discard,
+            style: 'destructive',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } else {
+      router.back();
+    }
+  };
+
   return (
-    <View className="flex-1 bg-dark-50">
+    <View className="flex-1" style={{ backgroundColor: '#f5f6fa' }}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className="flex-1"
@@ -199,12 +227,12 @@ export default function NewProductScreen() {
         >
           <View className="flex-row items-center justify-between px-4 py-3">
             <Pressable
-              onPress={() => router.back()}
+              onPress={handleBack}
               className="w-10 h-10 rounded-xl bg-dark-100 items-center justify-center"
             >
               <Ionicons name="close" size={22} color="#475569" />
             </Pressable>
-            <Text className="text-lg font-bold text-dark-900">New Product</Text>
+            <Text className="text-lg font-bold text-dark-900">{t.products.newProduct}</Text>
             <View className="w-10" />
           </View>
         </View>
@@ -245,7 +273,7 @@ export default function NewProductScreen() {
                       <View className="w-16 h-16 rounded-2xl bg-white items-center justify-center mb-2">
                         <Ionicons name="camera-outline" size={28} color="#94a3b8" />
                       </View>
-                      <Text className="text-dark-400 text-sm font-medium">Add Photo</Text>
+                      <Text className="text-dark-400 text-sm font-medium">{t.products.addPhoto}</Text>
                     </LinearGradient>
                   )}
                 </Pressable>
@@ -253,17 +281,17 @@ export default function NewProductScreen() {
             </View>
 
             {/* Form Fields */}
-            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-100">
+            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
               <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
-                Product Information
+                {t.products.productInformation}
               </Text>
 
               <View className="gap-4">
                 <Input
-                  label="Product Name"
+                  label={t.products.productName}
                   value={name}
                   onChangeText={setName}
-                  placeholder="Enter product name"
+                  placeholder={t.products.enterProductName}
                   error={errors.name}
                   icon="cube-outline"
                   autoFocus
@@ -271,10 +299,10 @@ export default function NewProductScreen() {
 
                 <View>
                   <Input
-                    label="Barcode"
+                    label={t.products.barcode}
                     value={barcode}
                     onChangeText={setBarcode}
-                    placeholder="Scan or enter barcode"
+                    placeholder={t.products.scanOrEnterBarcode}
                     autoCapitalize="none"
                     icon="barcode-outline"
                     rightIcon="scan-outline"
@@ -285,15 +313,15 @@ export default function NewProductScreen() {
             </View>
 
             {/* Pricing Section */}
-            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-100">
+            <View className="bg-white rounded-2xl p-4 mb-4 border border-dark-200">
               <Text className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-4">
-                Pricing & Stock
+                {t.products.pricingStock}
               </Text>
 
               <View className="flex-row gap-4">
                 <View className="flex-1">
                   <Input
-                    label="Price"
+                    label={t.products.price}
                     value={price}
                     onChangeText={handlePriceChange}
                     placeholder="0.00"
@@ -304,12 +332,12 @@ export default function NewProductScreen() {
                 </View>
                 <View className="flex-1">
                   <Input
-                    label="Initial Stock"
+                    label={t.products.initialStock}
                     value={stock}
                     onChangeText={handleStockChange}
                     placeholder="0"
                     keyboardType="numeric"
-                    suffix="units"
+                    suffix={t.badges.units}
                   />
                 </View>
               </View>
@@ -322,9 +350,9 @@ export default function NewProductScreen() {
                   <Ionicons name="bulb-outline" size={18} color="#30638e" />
                 </View>
                 <View className="flex-1">
-                  <Text className="text-primary-800 font-semibold mb-1">Quick Tip</Text>
+                  <Text className="text-primary-800 font-semibold mb-1">{t.products.quickTip}</Text>
                   <Text className="text-primary-700 text-sm leading-5">
-                    Tap the scan icon next to barcode to quickly scan with your camera.
+                    {t.products.quickTipText}
                   </Text>
                 </View>
               </View>
@@ -338,7 +366,7 @@ export default function NewProductScreen() {
           style={{ paddingBottom: insets.bottom + 16 }}
         >
           <Button
-            title="Save Product"
+            title={t.products.saveProduct}
             onPress={handleSave}
             loading={isLoading}
             fullWidth

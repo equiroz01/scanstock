@@ -70,8 +70,8 @@ export async function createBackupZip(): Promise<void> {
     appVersion: Constants.expoConfig?.version || '1.0.0',
     createdAt: new Date().toISOString(),
     deviceInfo: {
-      platform: Platform.OS,
-      osVersion: Platform.Version.toString(),
+      platform: Platform.OS ?? 'unknown',
+      osVersion: String(Platform.Version ?? 'unknown'),
     },
     productCount: products.length,
     photoCount: usedPhotos.length,

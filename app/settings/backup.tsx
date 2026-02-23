@@ -13,10 +13,12 @@ import { Card } from '@/components/ui/Card';
 import { createBackupZip, restoreBackupZip } from '@/services/backup/backupZip';
 import { exportToCSV } from '@/services/backup/exportCSV';
 import { exportToPDF } from '@/services/backup/exportPDF';
+import { useI18n } from '@/i18n';
 import type { PlanType } from '@/types/settings';
 
 export default function BackupScreen() {
   const router = useRouter();
+  const { t } = useI18n();
   const { plan } = usePlanStore();
   const { products, loadProducts } = useProductStore();
   const {
@@ -51,7 +53,7 @@ export default function BackupScreen() {
     const product = getProductById(productId);
 
     if (!product) {
-      Alert.alert('Error', 'Product not available. Please try again later.');
+      Alert.alert(t.common.error, t.backup.productNotAvailable);
       return;
     }
 
@@ -59,20 +61,20 @@ export default function BackupScreen() {
     const price = product.displayPrice || PLANS[targetPlan].price;
 
     Alert.alert(
-      `Upgrade to ${PLANS[targetPlan].name}`,
-      `Price: ${price}\n\nProceed with purchase?`,
+      `${t.backup.upgradeTo} ${PLANS[targetPlan].name}`,
+      `${t.products.price}: ${price}\n\n${t.backup.upgradeProceed}`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Buy Now',
+          text: t.backup.buyNow,
           onPress: async () => {
             try {
               await purchase(productId);
               // Success handled by useIAP hook
             } catch (error) {
               Alert.alert(
-                'Purchase Failed',
-                error instanceof Error ? error.message : 'Please try again'
+                t.backup.purchaseFailed,
+                error instanceof Error ? error.message : t.common.retry
               );
             }
           },
@@ -86,11 +88,11 @@ export default function BackupScreen() {
 
     try {
       await restorePurchases();
-      Alert.alert('Restore Complete', 'Your purchases have been restored.');
+      Alert.alert(t.backup.restoreComplete, t.backup.purchasesRestored);
     } catch (error) {
       Alert.alert(
-        'Restore Failed',
-        error instanceof Error ? error.message : 'Please try again'
+        t.backup.restoreFailed,
+        error instanceof Error ? error.message : t.common.retry
       );
     }
   };
@@ -102,19 +104,16 @@ export default function BackupScreen() {
     }
 
     if (products.length === 0) {
-      Alert.alert('No Products', 'You don\'t have any products to backup yet. Add some products first.');
+      Alert.alert(t.backup.noProducts, t.backup.noProductsToBackup);
       return;
     }
 
     setIsExporting(true);
     try {
       await createBackupZip();
-      Alert.alert(
-        'Success',
-        'Complete backup created with all photos and data! Save it to a safe location.'
-      );
+      Alert.alert(t.common.success, t.backup.backupCreated);
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create backup');
+      Alert.alert(t.common.error, error instanceof Error ? error.message : t.backup.backupError);
     } finally {
       setIsExporting(false);
     }
@@ -127,14 +126,14 @@ export default function BackupScreen() {
     }
 
     Alert.alert(
-      'Restore Backup',
-      `You currently have ${products.length} products.\n\n` +
-      `This will REPLACE ALL current data with the backup.\n\n` +
-      `Are you absolutely sure?`,
+      t.backup.restoreBackupConfirm,
+      `${products.length} ${t.common.products}.\n\n` +
+      `${t.backup.restoreBackupWarning}\n\n` +
+      `${t.backup.areYouSure}`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t.common.cancel, style: 'cancel' },
         {
-          text: 'Restore',
+          text: t.backup.restore,
           style: 'destructive',
           onPress: async () => {
             setIsImporting(true);
@@ -142,11 +141,11 @@ export default function BackupScreen() {
               const manifest = await restoreBackupZip();
               await loadProducts(); // Reload products after restore
               Alert.alert(
-                'Success',
-                `Backup restored!\n\n${manifest.productCount} products imported\n${manifest.photoCount} photos restored`
+                t.common.success,
+                `${t.backup.backupRestored}\n\n${manifest.productCount} ${t.backup.productsImported}\n${manifest.photoCount} ${t.backup.photosRestored}`
               );
             } catch (error) {
-              Alert.alert('Error', error instanceof Error ? error.message : 'Failed to restore backup');
+              Alert.alert(t.common.error, error instanceof Error ? error.message : t.backup.restoreError);
             } finally {
               setIsImporting(false);
             }
@@ -163,16 +162,16 @@ export default function BackupScreen() {
     }
 
     if (products.length === 0) {
-      Alert.alert('No Products', 'You don\'t have any products to export. Add some products first.');
+      Alert.alert(t.backup.noProducts, t.backup.noProductsToExport);
       return;
     }
 
     setIsExportingCSV(true);
     try {
       await exportToCSV();
-      Alert.alert('Success', 'Product list exported to CSV!');
+      Alert.alert(t.common.success, t.backup.csvExported);
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to export CSV');
+      Alert.alert(t.common.error, error instanceof Error ? error.message : t.settings.failedExportCSV);
     } finally {
       setIsExportingCSV(false);
     }
@@ -185,16 +184,16 @@ export default function BackupScreen() {
     }
 
     if (products.length === 0) {
-      Alert.alert('No Products', 'You don\'t have any products to export. Add some products first.');
+      Alert.alert(t.backup.noProducts, t.backup.noProductsToExport);
       return;
     }
 
     setIsExportingPDF(true);
     try {
       await exportToPDF();
-      Alert.alert('Success', 'Inventory report exported to PDF!');
+      Alert.alert(t.common.success, t.backup.pdfExported);
     } catch (error) {
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to export PDF');
+      Alert.alert(t.common.error, error instanceof Error ? error.message : t.settings.failedExportPDF);
     } finally {
       setIsExportingPDF(false);
     }
@@ -208,7 +207,7 @@ export default function BackupScreen() {
           <Ionicons name="arrow-back" size={24} color="#475569" />
         </Pressable>
         <Text className="text-lg font-semibold text-dark-900 ml-2">
-          Backup & Export
+          {t.backup.title}
         </Text>
       </View>
 
@@ -218,7 +217,7 @@ export default function BackupScreen() {
           <Card className="mb-4 bg-blue-50 border border-blue-200">
             <View className="flex-row items-center">
               <ActivityIndicator size="small" color="#3b82f6" />
-              <Text className="text-blue-900 ml-3">Loading products...</Text>
+              <Text className="text-blue-900 ml-3">{t.backup.loadingProducts}</Text>
             </View>
           </Card>
         )}
@@ -229,7 +228,7 @@ export default function BackupScreen() {
             <View className="flex-row items-start">
               <Ionicons name="warning" size={24} color="#dc2626" />
               <View className="flex-1 ml-3">
-                <Text className="text-red-900 font-semibold">Store Error</Text>
+                <Text className="text-red-900 font-semibold">{t.backup.storeError}</Text>
                 <Text className="text-red-700 text-sm">{iapError}</Text>
               </View>
             </View>
@@ -247,7 +246,7 @@ export default function BackupScreen() {
               />
             </View>
             <View className="flex-1">
-              <Text className="text-primary-100 text-sm">Current Plan</Text>
+              <Text className="text-primary-100 text-sm">{t.backup.currentPlan}</Text>
               <Text className="text-white text-xl font-bold">
                 {PLANS[plan].name}
               </Text>
@@ -265,12 +264,12 @@ export default function BackupScreen() {
                 {isRestoring ? (
                   <>
                     <ActivityIndicator size="small" color="white" />
-                    <Text className="text-white text-sm ml-2">Restoring...</Text>
+                    <Text className="text-white text-sm ml-2">{t.backup.restoring}</Text>
                   </>
                 ) : (
                   <>
                     <Ionicons name="refresh" size={16} color="white" />
-                    <Text className="text-white text-sm ml-2">Restore Purchases</Text>
+                    <Text className="text-white text-sm ml-2">{t.backup.restorePurchases}</Text>
                   </>
                 )}
               </View>
@@ -285,10 +284,10 @@ export default function BackupScreen() {
               <Ionicons name="information-circle" size={24} color="#3b82f6" />
               <View className="flex-1 ml-3">
                 <Text className="text-blue-900 font-semibold mb-1">
-                  Complete Backup
+                  {t.backup.completeBackup}
                 </Text>
                 <Text className="text-blue-700 text-sm leading-5">
-                  Backups include all products, photos, prices, and stock levels in a single ZIP file. Keep it safe!
+                  {t.backup.completeBackupDescription}
                 </Text>
               </View>
             </View>
@@ -299,7 +298,7 @@ export default function BackupScreen() {
         {isProLocal && (
           <View className="mb-6">
             <Text className="text-dark-500 text-sm font-medium uppercase tracking-wide mb-3">
-              Backup & Restore
+              {t.backup.backupRestore}
             </Text>
             <Card>
               <Pressable
@@ -312,14 +311,14 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-base font-medium">
-                    Create Backup
+                    {t.backup.createBackup}
                   </Text>
                   <Text className="text-dark-500 text-sm">
-                    Export data to a file
+                    {t.backup.exportDataToFile}
                   </Text>
                 </View>
                 {isExporting ? (
-                  <Text className="text-primary-600">Exporting...</Text>
+                  <Text className="text-primary-600">{t.backup.exporting}</Text>
                 ) : (
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 )}
@@ -337,14 +336,14 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-base font-medium">
-                    Restore Backup
+                    {t.backup.restoreBackup}
                   </Text>
                   <Text className="text-dark-500 text-sm">
-                    Import from a backup file
+                    {t.backup.importFromBackupFile}
                   </Text>
                 </View>
                 {isImporting ? (
-                  <Text className="text-green-600">Importing...</Text>
+                  <Text className="text-green-600">{t.backup.importing}</Text>
                 ) : (
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 )}
@@ -362,14 +361,14 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-base font-medium">
-                    Export CSV
+                    {t.backup.exportCSV}
                   </Text>
                   <Text className="text-dark-500 text-sm">
-                    Spreadsheet format (Excel compatible)
+                    {t.backup.spreadsheetExcel}
                   </Text>
                 </View>
                 {isExportingCSV ? (
-                  <Text className="text-amber-600">Exporting...</Text>
+                  <Text className="text-amber-600">{t.backup.exporting}</Text>
                 ) : (
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 )}
@@ -387,14 +386,14 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-base font-medium">
-                    Export PDF
+                    {t.backup.exportPDF}
                   </Text>
                   <Text className="text-dark-500 text-sm">
-                    Professional inventory report
+                    {t.backup.professionalReport}
                   </Text>
                 </View>
                 {isExportingPDF ? (
-                  <Text className="text-red-600">Generating...</Text>
+                  <Text className="text-red-600">{t.backup.generating}</Text>
                 ) : (
                   <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
                 )}
@@ -407,7 +406,7 @@ export default function BackupScreen() {
         {plan === 'free' && (
           <View>
             <Text className="text-dark-500 text-sm font-medium uppercase tracking-wide mb-3">
-              Upgrade Options
+              {t.backup.upgradeOptions}
             </Text>
 
             {/* Pro Local */}
@@ -418,10 +417,10 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-lg font-bold">
-                    Pro Local
+                    {t.backup.proLocal}
                   </Text>
                   <Text className="text-primary-600 font-semibold">
-                    {PLANS.pro_local.price} one-time
+                    {PLANS.pro_local.price} {t.backup.oneTime}
                   </Text>
                 </View>
               </View>
@@ -436,7 +435,7 @@ export default function BackupScreen() {
               </View>
 
               <Button
-                title={isPurchasing ? 'Processing...' : 'Upgrade to Pro Local'}
+                title={isPurchasing ? t.backup.processing : `${t.backup.upgradeTo} ${t.backup.proLocal}`}
                 onPress={() => handleUpgrade('pro_local')}
                 loading={isPurchasing}
                 disabled={isPurchasing || isLoadingIAP}
@@ -446,8 +445,8 @@ export default function BackupScreen() {
 
             {/* Pro Cloud */}
             <Card className="border-2 border-primary-200">
-              <View className="absolute -top-3 left-4 bg-primary-600 px-3 py-1 rounded-full">
-                <Text className="text-white text-xs font-semibold">RECOMMENDED</Text>
+              <View className="absolute -top-3 left-4 bg-primary-600 px-3 py-1" style={{ borderRadius: 9999 }}>
+                <Text className="text-white text-xs font-semibold">{t.backup.recommended}</Text>
               </View>
 
               <View className="flex-row items-start mb-4 mt-2">
@@ -456,7 +455,7 @@ export default function BackupScreen() {
                 </View>
                 <View className="flex-1">
                   <Text className="text-dark-900 text-lg font-bold">
-                    Pro Cloud
+                    {t.backup.proCloud}
                   </Text>
                   <Text className="text-primary-600 font-semibold">
                     {PLANS.pro_cloud.price}
@@ -474,7 +473,7 @@ export default function BackupScreen() {
               </View>
 
               <Button
-                title={isPurchasing ? 'Processing...' : 'Upgrade to Pro Cloud'}
+                title={isPurchasing ? t.backup.processing : `${t.backup.upgradeTo} ${t.backup.proCloud}`}
                 onPress={() => handleUpgrade('pro_cloud')}
                 loading={isPurchasing}
                 disabled={isPurchasing || isLoadingIAP}

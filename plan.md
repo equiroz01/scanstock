@@ -1,206 +1,163 @@
-Sí, Emeldo. Aquí tienes un plan de implementación tipo “roadmap de ingeniería” para ScanStock, alineado con offline-first, paywall limpio, y listo para App Store. (V1 → V1.2)
+# Plan: Scanner Flow + QR Support
 
-⸻
+## Estado Actual
 
-🛠️ Plan de Implementación — ScanStock
+### Lo que existe (V1 completado):
+- Scanner de códigos de barras (EAN13, EAN8, UPC-A, Code128, etc.)
+- Flujo: Escanear → Verificar si existe → Crear/Ver producto
+- Base de datos SQLite con campo `barcode`
+- UI del scanner con animaciones
+- CRUD completo de productos
+- Fotos de productos
+- Backup/Export (Pro)
 
-0) Setup inicial (Día 0–1)
+### Lo que falta:
+- Soporte para escanear QR codes
+- Generación de QR codes propios
+- Guardar/compartir QR codes
 
-Objetivo: repositorio, base técnica y estándares.
-	•	Repo (GitHub) + ramas: main, dev
-	•	CI básico: lint + tests
-	•	Stack recomendado:
-	•	React Native + Expo (rápido para App Store)
-	•	SQLite (expo-sqlite o WatermelonDB si quieres más robustez)
-	•	FileSystem para fotos/backups
-	•	Convenciones:
-	•	Clean architecture simple: domain/, data/, ui/
-	•	Feature folders: inventory/, scanner/, backup/, billing/
+---
 
-Entregable: app abre, navegación lista, DB inicial creada.
+## Fase 1: Habilitar escaneo de QR codes
 
-⸻
+### 1.1 Actualizar configuración del scanner
+**Archivo:** `app/(tabs)/scanner.tsx`
 
-V1 (rápido) — Offline + Pro Local (backup archivo)
+- [ ] Agregar `'qr'` al array `barcodeScannerSettings.barcodeTypes`
+- [ ] Detectar tipo de código escaneado (barcode vs QR)
+- [ ] Mostrar icono diferente según tipo detectado
 
-1) Módulo de datos local (Día 1–3)
+### 1.2 UI del scanner
+- [ ] Actualizar texto instructivo para incluir QR
+- [ ] Indicador visual cuando se detecta QR vs barcode
 
-Objetivo: inventario completo offline.
-	•	Modelo SQLite:
-	•	products(id, name, barcode, price, stock, photo_path, updated_at)
-	•	settings(key, value)
-	•	CRUD productos
-	•	Índices:
-	•	barcode unique
-	•	updated_at index
-	•	Capa repositorio:
-	•	ProductRepository
-	•	SettingsRepository
+---
 
-Criterio de listo: puedes crear/editar/buscar productos y no se pierde nada al reiniciar.
+## Fase 2: Mejorar flujo de escaneo → nuevo producto
 
-⸻
+### 2.1 Scanner como punto de entrada principal
+**Cambios en:** `app/(tabs)/scanner.tsx`
 
-2) UI MVP (Día 3–6)
+Flujo actual:
+```
+Abrir Scanner → Escanear código →
+  ├─ Producto existe → Ver/Editar producto
+  └─ Producto nuevo → Crear con código pre-llenado
+```
 
-Objetivo: pantallas principales operativas.
-	•	Home (lista + search + +/- stock)
-	•	Producto detalle
-	•	Crear/Editar producto
-	•	Ajustes
+Mejoras:
+- [ ] Feedback más claro cuando se detecta código nuevo vs existente
+- [ ] Animación de éxito diferenciada
 
-Extras de calidad:
-	•	Empty states (inventario vacío)
-	•	Validaciones (nombre requerido, precio numérico)
-	•	Formato moneda
+### 2.2 Pantalla de nuevo producto mejorada
+**Archivo:** `app/product/new.tsx`
 
-Criterio de listo: flujo completo sin scanner.
+- [ ] Mostrar el código escaneado prominentemente en la parte superior
+- [ ] Opción de re-escanear si el código es incorrecto
+- [ ] Modo "escaneo continuo" después de guardar (ya existe, verificar)
 
-⸻
+---
 
-3) Scanner (Día 6–8)
+## Fase 3: Generación y guardado de QR codes
 
-Objetivo: scan rápido con fallback.
-	•	Cámara + detección barcode
-	•	Si existe barcode → abre detalle
-	•	Si no existe → abre “Crear producto” con barcode prellenado
-	•	Vibración / sonido (opcional)
+### 3.1 Instalar dependencias
+```bash
+npx expo install react-native-qrcode-svg react-native-svg
+```
 
-Criterio de listo: escaneas 20 productos seguidos sin crashear.
+### 3.2 Crear servicio de QR
+**Nuevo archivo:** `src/services/qr/qrGenerator.ts`
 
-⸻
+Funcionalidades:
+- [ ] Generar QR con datos del producto
+- [ ] Formato del QR: JSON con info básica
+```json
+{
+  "app": "scanstock",
+  "v": 1,
+  "barcode": "123456789",
+  "name": "Producto X",
+  "price": 10.99
+}
+```
+- [ ] Capturar QR como imagen para guardar
 
-4) Fotos de producto (Día 8–9)
+### 3.3 Componente ProductQR
+**Nuevo archivo:** `src/components/ProductQR.tsx`
 
-Objetivo: catálogo usable.
-	•	Tomar foto / seleccionar de galería
-	•	Guardar en sandbox local (ruta persistente)
-	•	Miniaturas en lista
+- [ ] Mostrar QR del producto
+- [ ] Tamaño configurable
+- [ ] Colores personalizables (marca)
 
-Criterio de listo: fotos persisten tras cerrar app.
+### 3.4 Modal de QR
+**Nuevo archivo:** `src/components/QRModal.tsx`
 
-⸻
+- [ ] Modal fullscreen con QR grande
+- [ ] Botón "Guardar en Fotos"
+- [ ] Botón "Compartir"
+- [ ] Info del producto debajo del QR
 
-5) Pro Local — Backup & Restore (Día 9–12)
+### 3.5 Integrar en pantalla de producto
+**Archivo:** `app/product/[id].tsx`
 
-Objetivo: vender el pago único con valor real.
+- [ ] Agregar botón "Ver QR" en la sección de acciones
+- [ ] Abrir QRModal al presionar
 
-Backup:
-	•	Exportar:
-	•	db.sqlite (o dump JSON si prefieres)
-	•	carpeta photos/
-	•	manifest.json (versión, device, timestamp, app_version)
-	•	Comprimir en ZIP
-	•	Guardar en Files / compartir
+### 3.6 Guardar QR en galería
+**Archivo:** `src/services/qr/qrGenerator.ts`
 
-Restore:
-	•	Importar ZIP
-	•	Validar manifest
-	•	Reemplazar DB + fotos (con confirmación)
-	•	Reiniciar cache/UI
+- [ ] Usar `expo-media-library` para guardar
+- [ ] Usar `expo-sharing` para compartir
 
-Exportar (Pro):
-	•	CSV (productos)
-	•	PDF simple (lista)
+---
 
-Criterio de listo: backup/restore probado en otro teléfono o simulador limpio.
+## Fase 4: Importar desde QR (Opcional)
 
-⸻
+### 4.1 Detectar QR de ScanStock
+- [ ] Al escanear QR, verificar si es formato ScanStock
+- [ ] Si es de ScanStock, pre-llenar TODOS los campos
+- [ ] Mostrar preview de datos antes de crear
 
-6) Paywall + IAP (Día 12–15)
+---
 
-Objetivo: monetización sin fricción.
-	•	Estados de plan:
-	•	Free
-	•	Pro Local (one-time)
-	•	Pro Cloud (sub)
-	•	Integración In-App Purchases (StoreKit / Google Billing vía librería RN)
-	•	Pantalla “Copia de seguridad” (paywall)
-	•	Feature gating:
-	•	Free: no export/backup
-	•	Pro Local: sí backup local + export
-	•	Cloud: habilita UI cloud (aunque aún no exista en V1)
+## Archivos a modificar/crear
 
-Criterio de listo: compras funcionan en sandbox + restore de compra.
+### Modificar:
+| Archivo | Cambios |
+|---------|---------|
+| `app/(tabs)/scanner.tsx` | Agregar soporte QR |
+| `app/product/[id].tsx` | Botón ver QR |
+| `app/product/new.tsx` | Mostrar código escaneado |
+| `package.json` | Nuevas dependencias |
 
-⸻
+### Crear:
+| Archivo | Descripción |
+|---------|-------------|
+| `src/services/qr/qrGenerator.ts` | Servicio de generación |
+| `src/components/ProductQR.tsx` | Componente QR |
+| `src/components/QRModal.tsx` | Modal con QR y acciones |
 
-7) QA + Release V1 (Día 15–18)
-	•	Test cases:
-	•	0→1000 productos
-	•	scan repetido
-	•	backup/restore con fotos
-	•	app kill/reopen
-	•	Performance:
-	•	búsqueda rápida (index)
-	•	lista con paginación si necesario
-	•	App Store:
-	•	screenshots (basados en D)
-	•	privacidad: “datos no recolectados” (si aplica)
+---
 
-Entregable V1: Offline completo + Pro Local.
+## Orden de implementación
 
-⸻
+| # | Tarea | Prioridad |
+|---|-------|-----------|
+| 1 | Habilitar QR en scanner | Alta |
+| 2 | Instalar dependencias QR | Alta |
+| 3 | Crear servicio qrGenerator | Alta |
+| 4 | Crear componente ProductQR | Alta |
+| 5 | Crear QRModal | Alta |
+| 6 | Integrar QR en detalle de producto | Alta |
+| 7 | Guardar QR en galería | Media |
+| 8 | Compartir QR | Media |
+| 9 | Mejorar UI scanner (feedback) | Media |
+| 10 | Importar desde QR | Baja |
 
-V1.1 — Cloud Backup Manual
+---
 
-8) Backend mínimo (Semana 3)
+## Preguntas pendientes
 
-Objetivo: cloud sin sync engine.
-
-Servicios:
-	•	Auth (email+pass o Apple/Google)
-	•	API:
-	•	POST /backup (subida)
-	•	GET /backup/latest
-	•	GET /backup/list (historial)
-	•	Storage blob (S3/GCS/Azure)
-	•	Metadata DB (Postgres o Firestore):
-	•	user_id, size, timestamp, version
-
-Criterio de listo: puedes subir ZIP y bajarlo en otro dispositivo.
-
-⸻
-
-9) App: Cloud manual (Semana 3)
-	•	Login
-	•	Botón “Backup ahora”
-	•	Botón “Restaurar último”
-	•	Mostrar:
-	•	último backup
-	•	espacio usado
-	•	historial simple
-
-Entregable V1.1: Cloud manual estable.
-
-⸻
-
-V1.2 — Cloud Automático + Restore robusto
-
-10) Auto-backup diario (Semana 4)
-	•	Detectar cambios (flag “dirty” por updated_at / contador)
-	•	Job 1 vez al día si hay cambios
-	•	Retry/backoff
-	•	Limitar versiones (ej. últimas 10)
-
-Entregable V1.2: backup automático + versiones.
-
-⸻
-
-✅ Checklist de “Definition of Done”
-
-Para cada entrega:
-	•	Sincronicidad: no bloquea UI
-	•	Datos persistentes y consistentes
-	•	Manejo de errores con mensajes claros
-	•	Pruebas en dispositivo real
-	•	Crash-free sessions (mínimo)
-
-⸻
-
-⏱️ Estimación rápida (realista)
-	•	V1: ~3 semanas
-	•	V1.1: +1 semana
-	•	V1.2: +1 semana
-
-⸻
+1. **Formato del QR**: ¿Solo barcode o info completa?
+2. **Estilo del QR**: ¿Logo de la app en el centro?
+3. **Permisos**: ¿Solicitar permiso de galería al instalar o al usar?

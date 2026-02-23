@@ -4,10 +4,14 @@ import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import { useProductStore } from '@/stores/useProductStore';
 import { initializePhotoStorage } from '@/services/photos/photoStorage';
+import { Toast } from '@/components/ui/Toast';
+import { useToast } from '@/hooks/useToast';
+import { I18nProvider } from '@/providers/I18nProvider';
 import '../global.css';
 
-export default function RootLayout() {
+function RootLayoutContent() {
   const loadProducts = useProductStore(state => state.loadProducts);
+  const { visible, message, type, action, hide } = useToast();
 
   useEffect(() => {
     // Initialize app
@@ -43,6 +47,21 @@ export default function RootLayout() {
           }}
         />
       </Stack>
+      <Toast
+        visible={visible}
+        message={message}
+        type={type}
+        action={action}
+        onHide={hide}
+      />
     </View>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <I18nProvider>
+      <RootLayoutContent />
+    </I18nProvider>
   );
 }

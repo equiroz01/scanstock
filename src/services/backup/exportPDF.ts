@@ -27,12 +27,12 @@ export async function exportToPDF(): Promise<void> {
     .header {
       text-align: center;
       margin-bottom: 30px;
-      border-bottom: 3px solid #4f46e5;
+      border-bottom: 3px solid #30638e;
       padding-bottom: 20px;
     }
     .header h1 {
       margin: 0;
-      color: #4f46e5;
+      color: #30638e;
       font-size: 28px;
     }
     .header p {
@@ -61,7 +61,7 @@ export async function exportToPDF(): Promise<void> {
     .summary-item .value {
       font-size: 24px;
       font-weight: bold;
-      color: #4f46e5;
+      color: #30638e;
     }
     table {
       width: 100%;
@@ -69,7 +69,7 @@ export async function exportToPDF(): Promise<void> {
       margin-top: 20px;
     }
     thead {
-      background: #4f46e5;
+      background: #30638e;
       color: white;
     }
     th {
@@ -114,7 +114,7 @@ export async function exportToPDF(): Promise<void> {
 </head>
 <body>
   <div class="header">
-    <h1>📦 ScanStock Inventory Report</h1>
+    <h1>ScanStock Inventory Report</h1>
     <p>Generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}</p>
   </div>
 
